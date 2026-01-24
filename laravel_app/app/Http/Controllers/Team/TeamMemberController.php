@@ -11,6 +11,34 @@ use Inertia\Inertia;
 
 class TeamMemberController extends Controller
 {
+    public function search(Request $request, Team $team)
+    {
+        $query = $request->query('query');
+
+        if (!$query) {
+            return response()->json([]);
+        }
+
+        $users = User::where(function ($q) use ($query) {
+            $q->where('email', 'like', "%{$query}%")
+              ->orWhere('first_name', 'like', "%{$query}%")
+              ->orWhere('last_name', 'like', "%{$query}%");
+        })
+        ->limit(10)
+        ->get()
+        ->map(function ($user) use ($team) {
+            return [
+                'id' => $user->id,
+                'email' => $user->email,
+                'name' => "{$user->first_name} {$user->last_name}",
+                'is_current_user' => $user->id === auth()->id(),
+                'is_already_member' => $team->users()->where('user_id', $user->id)->exists(),
+            ];
+        });
+
+        return response()->json($users);
+    }
+
     public function index(Team $team)
     {
         $this->authorize('manageMembers', $team);

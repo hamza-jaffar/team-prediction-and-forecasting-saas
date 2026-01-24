@@ -1,13 +1,40 @@
 import InputError from '@/components/input-error';
-import { Input } from '@/components/ui/input';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from '@/components/ui/command';
 import { Label } from '@/components/ui/label';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import { Spinner } from '@/components/ui/spinner';
 import AppLayout from '@/layouts/app-layout';
+import { cn } from '@/lib/utils';
 import teamRoutes from '@/routes/team';
 import { BreadcrumbItem, SharedData, Team, TeamRole, User } from '@/types';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Check, ChevronsUpDown, Trash2 } from 'lucide-react';
 import * as React from 'react';
-
-declare function route(name: string, params?: any): string;
+import { useEffect, useState } from 'react';
 
 interface ExtendedUser extends User {
     team_role?: TeamRole;
@@ -23,8 +50,44 @@ export default function Members() {
     const { team, members, roles } = usePage<PageProps>().props;
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
-        team_role_id: roles.find((r) => r.slug === 'member')?.id || '',
+        team_role_id: '',
     });
+
+    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [openEmail, setOpenEmail] = useState(false);
+    const [openRole, setOpenRole] = useState(false);
+
+    useEffect(() => {
+        if (data.email.length < 2) {
+            setSuggestions([]);
+            return;
+        }
+
+        const timeoutId = setTimeout(async () => {
+            setIsSearching(true);
+            try {
+                const response = await fetch(
+                    teamRoutes.members.search(
+                        { team: team.slug },
+                        {
+                            query: { query: data.email },
+                        },
+                    ).url,
+                );
+                const users = await response.json();
+                setSuggestions(users);
+            } catch (error) {
+                console.error('Search error:', error);
+            } finally {
+                setIsSearching(false);
+            }
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [data.email, team.slug]);
+
+    const canSubmit = data.email && data.team_role_id && !processing;
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -39,10 +102,11 @@ export default function Members() {
 
     const addMember = (e: React.FormEvent) => {
         e.preventDefault();
-        // Use the team.members.store route Helper if available, otherwise manual
-        // Route helper check: team.members.store is likely available via prefix
-        post(route('team.members.store', { team: team.slug }), {
-            onSuccess: () => reset('email'),
+        post(teamRoutes.members.store(team.slug).url, {
+            onSuccess: () => {
+                reset('email', 'team_role_id');
+                setSuggestions([]);
+            },
         });
     };
 
@@ -58,8 +122,8 @@ export default function Members() {
                                 Add Team Member
                             </h2>
                             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                Add a new member to your team by their email
-                                address.
+                                Select a user and assign a role to invite them
+                                to your team.
                             </p>
                         </header>
 
@@ -67,54 +131,225 @@ export default function Members() {
                             onSubmit={addMember}
                             className="mt-6 max-w-xl space-y-6"
                         >
-                            <div>
-                                <Label>Email</Label>
-                                <Input
-                                    type="email"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"
-                                    value={data.email}
-                                    onChange={(e) =>
-                                        setData('email', e.target.value)
-                                    }
-                                    required
-                                />
-                                <InputError
-                                    message={errors.email as string | undefined}
-                                />
-                            </div>
+                            <div className="space-y-4">
+                                <div className="flex flex-col gap-2">
+                                    <Label>User Email</Label>
+                                    <Popover
+                                        open={openEmail}
+                                        onOpenChange={setOpenEmail}
+                                    >
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                aria-expanded={openEmail}
+                                                className="w-full justify-between"
+                                            >
+                                                {data.email ||
+                                                    'Search for a user...'}
+                                                {isSearching ? (
+                                                    <Spinner className="ml-2" />
+                                                ) : (
+                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                )}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent
+                                            className="w-full p-0"
+                                            align="start"
+                                        >
+                                            <Command shouldFilter={false}>
+                                                <CommandInput
+                                                    placeholder="Type email or name..."
+                                                    value={data.email}
+                                                    onValueChange={(val) =>
+                                                        setData('email', val)
+                                                    }
+                                                />
+                                                <CommandList>
+                                                    <CommandEmpty>
+                                                        No users found.
+                                                    </CommandEmpty>
+                                                    <CommandGroup>
+                                                        {suggestions.map(
+                                                            (user) => (
+                                                                <CommandItem
+                                                                    key={
+                                                                        user.id
+                                                                    }
+                                                                    value={
+                                                                        user.email
+                                                                    }
+                                                                    disabled={
+                                                                        user.is_already_member
+                                                                    }
+                                                                    onSelect={(
+                                                                        currentValue,
+                                                                    ) => {
+                                                                        setData(
+                                                                            'email',
+                                                                            currentValue,
+                                                                        );
+                                                                        setOpenEmail(
+                                                                            false,
+                                                                        );
+                                                                    }}
+                                                                    className={cn(
+                                                                        user.is_already_member &&
+                                                                            'cursor-not-allowed opacity-50 select-none',
+                                                                    )}
+                                                                >
+                                                                    <div className="flex w-full items-center justify-between">
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-sm font-medium">
+                                                                                {
+                                                                                    user.name
+                                                                                }
+                                                                            </span>
+                                                                            <span className="text-xs text-muted-foreground">
+                                                                                {
+                                                                                    user.email
+                                                                                }
+                                                                            </span>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-1">
+                                                                            {user.is_current_user && (
+                                                                                <Badge
+                                                                                    variant="secondary"
+                                                                                    className="text-[10px]"
+                                                                                >
+                                                                                    You
+                                                                                </Badge>
+                                                                            )}
+                                                                            {user.is_already_member && (
+                                                                                <Badge
+                                                                                    variant="outline"
+                                                                                    className="border-red-200 bg-red-50 text-[10px] text-red-600 dark:bg-red-900/20 dark:text-red-400"
+                                                                                >
+                                                                                    Member
+                                                                                </Badge>
+                                                                            )}
+                                                                            <Check
+                                                                                className={cn(
+                                                                                    'ml-2 h-4 w-4',
+                                                                                    data.email ===
+                                                                                        user.email
+                                                                                        ? 'opacity-100'
+                                                                                        : 'opacity-0',
+                                                                                )}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                </CommandItem>
+                                                            ),
+                                                        )}
+                                                    </CommandGroup>
+                                                </CommandList>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
+                                    <InputError
+                                        message={
+                                            errors.email as string | undefined
+                                        }
+                                    />
+                                </div>
 
-                            <div>
-                                <Label>Role</Label>
-                                <select
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"
-                                    value={data.team_role_id}
-                                    onChange={(e) =>
-                                        setData('team_role_id', e.target.value)
-                                    }
-                                    required
-                                >
-                                    {roles.map((role) => (
-                                        <option key={role.id} value={role.id}>
-                                            {role.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                <InputError
-                                    message={
-                                        errors.team_role_id as
-                                            | string
-                                            | undefined
-                                    }
-                                />
+                                <div className="flex flex-col gap-2">
+                                    <Label>Select Role</Label>
+                                    <Popover
+                                        open={openRole}
+                                        onOpenChange={setOpenRole}
+                                    >
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                aria-expanded={openRole}
+                                                className="w-full justify-between"
+                                            >
+                                                {data.team_role_id
+                                                    ? roles.find(
+                                                          (role) =>
+                                                              role.id.toString() ===
+                                                              data.team_role_id.toString(),
+                                                      )?.name
+                                                    : 'Select a role...'}
+                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent
+                                            className="w-full p-0"
+                                            align="start"
+                                        >
+                                            <Command>
+                                                <CommandInput placeholder="Search role..." />
+                                                <CommandList>
+                                                    <CommandEmpty>
+                                                        No roles found.
+                                                    </CommandEmpty>
+                                                    <CommandGroup>
+                                                        {roles.map((role) => (
+                                                            <CommandItem
+                                                                key={role.id}
+                                                                value={
+                                                                    role.name
+                                                                }
+                                                                onSelect={() => {
+                                                                    setData(
+                                                                        'team_role_id',
+                                                                        role.id.toString(),
+                                                                    );
+                                                                    setOpenRole(
+                                                                        false,
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <Check
+                                                                    className={cn(
+                                                                        'mr-2 h-4 w-4',
+                                                                        data.team_role_id.toString() ===
+                                                                            role.id.toString()
+                                                                            ? 'opacity-100'
+                                                                            : 'opacity-0',
+                                                                    )}
+                                                                />
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-sm font-medium">
+                                                                        {
+                                                                            role.name
+                                                                        }
+                                                                    </span>
+                                                                    {role.description && (
+                                                                        <span className="text-[10px] text-muted-foreground">
+                                                                            {
+                                                                                role.description
+                                                                            }
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </CommandItem>
+                                                        ))}
+                                                    </CommandGroup>
+                                                </CommandList>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
+                                    <InputError
+                                        message={
+                                            errors.team_role_id as
+                                                | string
+                                                | undefined
+                                        }
+                                    />
+                                </div>
                             </div>
 
                             <div className="flex items-center gap-4">
-                                <button
-                                    className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition duration-150 ease-in-out hover:bg-indigo-700 focus:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none active:bg-indigo-900 dark:focus:ring-offset-gray-800"
-                                    disabled={processing}
-                                >
+                                <Button className="gap-2" disabled={!canSubmit}>
+                                    {processing && <Spinner />}
                                     Add Member
-                                </button>
+                                </Button>
                             </div>
                         </form>
                     </div>
@@ -161,30 +396,65 @@ export default function Members() {
                                             <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                                                 {member.id !==
                                                     (team as any).user_id && (
-                                                    <button
-                                                        onClick={() => {
-                                                            if (
-                                                                confirm(
-                                                                    'Are you sure you want to remove this member?',
-                                                                )
-                                                            ) {
-                                                                (
-                                                                    router as any
-                                                                ).delete(
-                                                                    route(
-                                                                        'team.members.destroy',
-                                                                        {
-                                                                            team: team.slug,
-                                                                            member: member.id,
-                                                                        },
-                                                                    ),
-                                                                );
-                                                            }
-                                                        }}
-                                                        className="ml-4 text-red-600 hover:text-red-900"
-                                                    >
-                                                        Remove
-                                                    </button>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger
+                                                            asChild
+                                                        >
+                                                            <button className="ml-4 flex items-center gap-1 text-red-600 hover:text-red-900">
+                                                                <Trash2 className="size-4" />
+                                                                Remove
+                                                            </button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>
+                                                                    Are you
+                                                                    absolutely
+                                                                    sure?
+                                                                </AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    This action
+                                                                    will remove{' '}
+                                                                    {
+                                                                        member.first_name
+                                                                    }{' '}
+                                                                    {
+                                                                        member.last_name
+                                                                    }{' '}
+                                                                    from the
+                                                                    team. They
+                                                                    will lose
+                                                                    access to
+                                                                    all team
+                                                                    resources
+                                                                    immediately.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>
+                                                                    Cancel
+                                                                </AlertDialogCancel>
+                                                                <AlertDialogAction
+                                                                    onClick={() => {
+                                                                        (
+                                                                            router as any
+                                                                        ).delete(
+                                                                            teamRoutes.members.destroy(
+                                                                                {
+                                                                                    team: team.slug,
+                                                                                    member: member.id,
+                                                                                },
+                                                                            )
+                                                                                .url,
+                                                                        );
+                                                                    }}
+                                                                    className="bg-red-600 hover:bg-red-700"
+                                                                >
+                                                                    Continue
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
                                                 )}
                                             </td>
                                         </tr>

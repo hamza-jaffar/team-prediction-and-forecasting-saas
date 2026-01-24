@@ -9,6 +9,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('team/{team}/dashboard', [TeamDashboardController::class, 'dashboard'])->name('team.dashboard');
 
     Route::prefix('team/{team}')->name('team.')->group(function () {
+        Route::get('members/search', [\App\Http\Controllers\Team\TeamMemberController::class, 'search'])->name('members.search');
         Route::resource('members', \App\Http\Controllers\Team\TeamMemberController::class);
         Route::resource('roles', \App\Http\Controllers\Team\TeamRoleController::class);
     });

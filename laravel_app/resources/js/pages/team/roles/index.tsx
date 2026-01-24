@@ -1,4 +1,16 @@
 import InputError from '@/components/input-error';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
@@ -13,6 +25,7 @@ import {
     TeamRole,
 } from '@/types';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Trash2 } from 'lucide-react';
 import * as React from 'react';
 
 interface PageProps extends SharedData {
@@ -21,8 +34,6 @@ interface PageProps extends SharedData {
     globalRoles: TeamRole[];
     allPermissions: TeamPermission[];
 }
-
-declare function route(name: string, params?: any): string;
 
 export default function Roles() {
     const { team, roles, globalRoles, allPermissions } =
@@ -173,15 +184,15 @@ export default function Roles() {
                             </div>
 
                             <div className="flex items-center gap-4">
-                                <button
-                                    className={`inline-flex items-center gap-2 rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition duration-150 ease-in-out hover:bg-indigo-700 focus:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none active:bg-indigo-900 dark:focus:ring-offset-gray-800 ${processing && 'opacity-50'}`}
+                                <Button
+                                    className={` ${processing && 'opacity-50'}`}
                                     disabled={processing}
                                 >
                                     {processing && <Spinner />}
                                     {editingRole
                                         ? 'Update Role'
                                         : 'Create Role'}
-                                </button>
+                                </Button>
                                 {editingRole && (
                                     <button
                                         type="button"
@@ -230,28 +241,55 @@ export default function Roles() {
                                             >
                                                 Edit
                                             </button>
-                                            <button
-                                                onClick={() => {
-                                                    if (
-                                                        confirm(
-                                                            'Delete this role?',
-                                                        )
-                                                    ) {
-                                                        router.delete(
-                                                            route(
-                                                                'team.roles.destroy',
-                                                                {
-                                                                    team: team.slug,
-                                                                    role: role.id,
-                                                                },
-                                                            ),
-                                                        );
-                                                    }
-                                                }}
-                                                className="text-sm text-red-600 hover:text-red-900"
-                                            >
-                                                Delete
-                                            </button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <button className="flex items-center gap-1 text-sm text-red-600 hover:text-red-900">
+                                                        <Trash2 className="size-3" />
+                                                        Delete
+                                                    </button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>
+                                                            Delete this role?
+                                                        </AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Are you sure you
+                                                            want to delete the "
+                                                            {role.name}" role?
+                                                            This action cannot
+                                                            be undone. Users
+                                                            currently assigned
+                                                            to this role may
+                                                            lose access to
+                                                            features until
+                                                            reassigned.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>
+                                                            Cancel
+                                                        </AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            onClick={() => {
+                                                                (
+                                                                    router as any
+                                                                ).delete(
+                                                                    teamRoutes.roles.destroy(
+                                                                        {
+                                                                            team: team.slug,
+                                                                            role: role.id,
+                                                                        },
+                                                                    ).url,
+                                                                );
+                                                            }}
+                                                            className="bg-red-600 hover:bg-red-700"
+                                                        >
+                                                            Delete Role
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
                                         </div>
                                     </div>
                                 ))}

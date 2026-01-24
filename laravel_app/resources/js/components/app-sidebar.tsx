@@ -30,7 +30,7 @@ export function AppSidebar() {
             title: 'Team',
             href: team.create(),
             icon: Building2,
-            show: !/^\/team\/[^/]+\/dashboard/.test(url),
+            show: true,
         },
         {
             title: 'Users',
