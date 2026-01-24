@@ -53,11 +53,19 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the teams that the user belongs to.
+     * Get the teams that the user owns.
+     */
+    public function ownedTeams()
+    {
+        return $this->hasMany(Team::class);
+    }
+
+    /**
+     * Get all teams the user belongs to.
      */
     public function teams()
     {
-        return $this->hasMany(Team::class);
+        return $this->belongsToMany(Team::class)->withPivot('team_role_id')->withTimestamps();
     }
 
     /**
@@ -66,5 +74,30 @@ class User extends Authenticatable
     public function currentTeam()
     {
         return $this->belongsTo(Team::class, 'current_team_id');
+    }
+
+    /**
+     * Determine if the user has a given permission within a team.
+     */
+    public function hasTeamPermission(Team $team, string $permission): bool
+    {
+        // Owners have all permissions
+        if ($this->id === $team->user_id) {
+            return true;
+        }
+
+        $membership = $team->users()->where('user_id', $this->id)->first();
+
+        if (! $membership || ! isset($membership->pivot->team_role_id)) {
+            return false;
+        }
+
+        $role = TeamRole::find($membership->pivot->team_role_id);
+
+        if (! $role) {
+            return false;
+        }
+
+        return $role->permissions()->where('slug', $permission)->exists();
     }
 }

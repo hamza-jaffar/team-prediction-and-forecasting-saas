@@ -6,6 +6,7 @@ use App\Helpers\SlugHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Team\CreateEditRequest;
 use App\Models\Team;
+use App\Models\TeamRole;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -43,7 +44,9 @@ class TeamCRUDController extends Controller
                 'slug' => SlugHelper::create($request->name, 'teams'),
             ]);
 
-            $team->users()->attach(auth()->id(), ['role' => 'owner']);
+
+            $ownerRole = TeamRole::where('slug', 'owner')->first();
+            $team->users()->attach(auth()->id(), ['team_role_id' => $ownerRole?->id]);
 
             $user = auth()->user();
             $user->current_team_id = $team->id;

@@ -1,3 +1,19 @@
+export type TeamPermission = {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+};
+
+export type TeamRole = {
+    id: number;
+    team_id: number | null;
+    name: string;
+    slug: string;
+    description: string | null;
+    permissions?: TeamPermission[];
+};
+
 export type Team = {
     id: number;
     name: string;

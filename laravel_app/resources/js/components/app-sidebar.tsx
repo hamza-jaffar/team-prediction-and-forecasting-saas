@@ -11,7 +11,7 @@ import { dashboard } from '@/routes';
 import team from '@/routes/team';
 import type { NavItem, SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
-import { Bot, LayoutGrid, Settings, SquareTerminal, Users } from 'lucide-react';
+import { Building2, LayoutGrid, Settings, UserCog } from 'lucide-react';
 import { TeamSwitcher } from './team-switcher';
 
 export function AppSidebar() {
@@ -29,52 +29,27 @@ export function AppSidebar() {
         {
             title: 'Team',
             href: team.create(),
-            icon: Users,
+            icon: Building2,
             show: !/^\/team\/[^/]+\/dashboard/.test(url),
         },
         {
-            title: 'Playground',
+            title: 'Users',
             href: '#',
-            icon: SquareTerminal,
-            show: true,
-            isActive: true,
+            icon: UserCog,
+            show: !!auth.active_team,
             items: [
                 {
-                    title: 'History',
-                    href: '#',
+                    title: 'Members',
+                    href: auth.active_team
+                        ? team.members.index(auth.active_team.slug).url
+                        : '#',
                     show: true,
                 },
                 {
-                    title: 'Starred',
-                    href: '#',
-                    show: false,
-                },
-                {
-                    title: 'Settings',
-                    href: '#',
-                    show: true,
-                },
-            ],
-        },
-        {
-            title: 'Models',
-            href: '#',
-            icon: Bot,
-            show: true,
-            items: [
-                {
-                    title: 'Genesis',
-                    href: '#',
-                    show: true,
-                },
-                {
-                    title: 'Explorer',
-                    href: '#',
-                    show: true,
-                },
-                {
-                    title: 'Quantum',
-                    href: '#',
+                    title: 'Roles & Permissions',
+                    href: auth.active_team
+                        ? team.roles.index(auth.active_team.slug).url
+                        : '#',
                     show: true,
                 },
             ],

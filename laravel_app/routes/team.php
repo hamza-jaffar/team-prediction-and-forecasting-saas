@@ -8,6 +8,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('team/{team}/dashboard', [TeamDashboardController::class, 'dashboard'])->name('team.dashboard');
 
-    Route::resource('team', TeamCRUDController::class);
+    Route::prefix('team/{team}')->name('team.')->group(function () {
+        Route::resource('members', \App\Http\Controllers\Team\TeamMemberController::class);
+        Route::resource('roles', \App\Http\Controllers\Team\TeamRoleController::class);
+    });
 
+    Route::resource('team', TeamCRUDController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
 });

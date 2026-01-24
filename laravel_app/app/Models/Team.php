@@ -23,7 +23,15 @@ class Team extends Model
      */
     public function users()
     {
-        return $this->belongsToMany(User::class)->withPivot('role')->withTimestamps();
+        return $this->belongsToMany(User::class)->withPivot('team_role_id')->withTimestamps();
+    }
+
+    /**
+     * Get the roles for the team.
+     */
+    public function roles()
+    {
+        return $this->hasMany(TeamRole::class);
     }
 
     /**
