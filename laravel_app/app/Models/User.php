@@ -59,4 +59,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Team::class);
     }
+
+    /**
+     * Get the current team that the user is switched to.
+     */
+    public function currentTeam()
+    {
+        return $this->belongsTo(Team::class, 'current_team_id');
+    }
 }

@@ -1,4 +1,10 @@
-import { ChevronsUpDown, GalleryVerticalEnd, Plus } from 'lucide-react';
+import {
+    BadgeCheck,
+    ChevronsUpDown,
+    GalleryVerticalEnd,
+    Plus,
+    UserIcon,
+} from 'lucide-react';
 
 import {
     DropdownMenu,
@@ -15,20 +21,15 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from '@/components/ui/sidebar';
+import { dashboard } from '@/routes';
 import team from '@/routes/team';
 import { SharedData, Team } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-
-declare function route(name: string, params?: any): string;
 
 export function TeamSwitcher({ teams }: { teams: Team[] }) {
     const { isMobile } = useSidebar();
     const { auth } = usePage<SharedData>().props;
     const activeTeam = auth.active_team;
-
-    if (!activeTeam) {
-        return null;
-    }
 
     return (
         <SidebarMenu>
@@ -40,14 +41,18 @@ export function TeamSwitcher({ teams }: { teams: Team[] }) {
                             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         >
                             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                                <GalleryVerticalEnd className="size-4" />
+                                {activeTeam ? (
+                                    <GalleryVerticalEnd className="size-4" />
+                                ) : (
+                                    <UserIcon className="size-4" />
+                                )}
                             </div>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-medium">
-                                    {activeTeam.name}
+                                    {activeTeam?.name || 'Personal Account'}
                                 </span>
                                 <span className="truncate text-xs">
-                                    {activeTeam.slug}
+                                    {activeTeam?.slug || 'Personal'}
                                 </span>
                             </div>
                             <ChevronsUpDown className="ml-auto" />
@@ -59,6 +64,22 @@ export function TeamSwitcher({ teams }: { teams: Team[] }) {
                         side={isMobile ? 'bottom' : 'right'}
                         sideOffset={4}
                     >
+                        <DropdownMenuLabel className="text-xs text-muted-foreground">
+                            Accounts
+                        </DropdownMenuLabel>
+                        <DropdownMenuItem
+                            onClick={() => router.get(dashboard().url)}
+                            className="gap-2 p-2"
+                        >
+                            <div className="flex size-6 items-center justify-center rounded-md border">
+                                <UserIcon className="size-3.5 shrink-0" />
+                            </div>
+                            Personal Account
+                            {!activeTeam && (
+                                <BadgeCheck className="ml-auto size-4 text-sidebar-primary" />
+                            )}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuLabel className="text-xs text-muted-foreground">
                             Teams
                         </DropdownMenuLabel>
@@ -73,9 +94,16 @@ export function TeamSwitcher({ teams }: { teams: Team[] }) {
                                 <div className="flex size-6 items-center justify-center rounded-md border">
                                     <GalleryVerticalEnd className="size-3.5 shrink-0" />
                                 </div>
-                                {data.name}
+                                <div className="flex flex-col">
+                                    {data.name}
+                                    <span className="text-[10px] text-gray-500">
+                                        {data.slug}
+                                    </span>
+                                </div>
                                 <DropdownMenuShortcut>
-                                    ⌘{index + 1}
+                                    {activeTeam?.id === data.id && (
+                                        <BadgeCheck className="ml-auto size-4 text-sidebar-primary" />
+                                    )}
                                 </DropdownMenuShortcut>
                             </DropdownMenuItem>
                         ))}

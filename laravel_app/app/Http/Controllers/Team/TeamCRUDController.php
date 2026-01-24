@@ -45,6 +45,10 @@ class TeamCRUDController extends Controller
 
             $team->users()->attach(auth()->id(), ['role' => 'owner']);
 
+            $user = auth()->user();
+            $user->current_team_id = $team->id;
+            $user->save();
+
             return redirect()->route('dashboard')->with('success', 'Team created successfully');
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to create team');

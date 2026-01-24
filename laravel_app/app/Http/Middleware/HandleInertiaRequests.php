@@ -35,12 +35,27 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user()?->load('teams');
+        $activeTeam = $request->route('team');
+
+        // Update current_team_id if we are on a team specific route
+        if ($activeTeam instanceof \App\Models\Team && $user && $user->current_team_id !== $activeTeam->id) {
+            $user->current_team_id = $activeTeam->id;
+            $user->save();
+        }
+
+        // Clear current_team_id if we are on the personal dashboard route
+        if ($request->routeIs('dashboard') && $user && $user->current_team_id !== null) {
+            $user->current_team_id = null;
+            $user->save();
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user()?->load('teams'),
-                'active_team' => $request->route('team') ?? $request->user()?->teams?->first(),
+                'user' => $user,
+                'active_team' => $activeTeam instanceof \App\Models\Team ? $activeTeam : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [
