@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Team;
 
 use App\Helpers\SlugHelper;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Team\CreateEditRequest;
 use App\Models\Team;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class TeamController extends Controller
+class TeamCRUDController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -36,11 +37,13 @@ class TeamController extends Controller
     public function store(CreateEditRequest $request)
     {
         try {
-            Team::create([
+            $team = Team::create([
                 ...$request->validated(),
                 'user_id' => auth()->id(),
                 'slug' => SlugHelper::create($request->name, 'teams'),
             ]);
+
+            $team->users()->attach(auth()->id(), ['role' => 'owner']);
 
             return redirect()->route('dashboard')->with('success', 'Team created successfully');
         } catch (\Exception $e) {

@@ -1,5 +1,4 @@
-import { ChevronsUpDown, Plus } from 'lucide-react';
-import * as React from 'react';
+import { ChevronsUpDown, GalleryVerticalEnd, Plus } from 'lucide-react';
 
 import {
     DropdownMenu,
@@ -17,19 +16,15 @@ import {
     useSidebar,
 } from '@/components/ui/sidebar';
 import team from '@/routes/team';
-import { Link } from '@inertiajs/react';
+import { SharedData, Team } from '@/types';
+import { Link, router, usePage } from '@inertiajs/react';
 
-export function TeamSwitcher({
-    teams,
-}: {
-    teams: {
-        name: string;
-        logo: React.ElementType;
-        plan: string;
-    }[];
-}) {
+declare function route(name: string, params?: any): string;
+
+export function TeamSwitcher({ teams }: { teams: Team[] }) {
     const { isMobile } = useSidebar();
-    const [activeTeam, setActiveTeam] = React.useState(teams[0]);
+    const { auth } = usePage<SharedData>().props;
+    const activeTeam = auth.active_team;
 
     if (!activeTeam) {
         return null;
@@ -45,14 +40,14 @@ export function TeamSwitcher({
                             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         >
                             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                                <activeTeam.logo className="size-4" />
+                                <GalleryVerticalEnd className="size-4" />
                             </div>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-medium">
                                     {activeTeam.name}
                                 </span>
                                 <span className="truncate text-xs">
-                                    {activeTeam.plan}
+                                    {activeTeam.slug}
                                 </span>
                             </div>
                             <ChevronsUpDown className="ml-auto" />
@@ -67,16 +62,18 @@ export function TeamSwitcher({
                         <DropdownMenuLabel className="text-xs text-muted-foreground">
                             Teams
                         </DropdownMenuLabel>
-                        {teams.map((team, index) => (
+                        {teams.map((data, index) => (
                             <DropdownMenuItem
-                                key={team.name}
-                                onClick={() => setActiveTeam(team)}
+                                key={data.slug}
+                                onClick={() =>
+                                    router.get(team.dashboard(data.slug).url)
+                                }
                                 className="gap-2 p-2"
                             >
                                 <div className="flex size-6 items-center justify-center rounded-md border">
-                                    <team.logo className="size-3.5 shrink-0" />
+                                    <GalleryVerticalEnd className="size-3.5 shrink-0" />
                                 </div>
-                                {team.name}
+                                {data.name}
                                 <DropdownMenuShortcut>
                                     ⌘{index + 1}
                                 </DropdownMenuShortcut>

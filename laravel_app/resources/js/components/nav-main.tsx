@@ -38,15 +38,17 @@ const DropdownLink = ({ item }: { item: NavItem }) => {
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                     <SidebarMenuSub>
-                        {item.items?.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.title}>
-                                <SidebarMenuSubButton asChild>
-                                    <Link href={subItem.href}>
-                                        <span>{subItem.title}</span>
-                                    </Link>
-                                </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                        ))}
+                        {item.items?.map((subItem) =>
+                            subItem.show === true ? (
+                                <SidebarMenuSubItem key={subItem.title}>
+                                    <SidebarMenuSubButton asChild>
+                                        <Link href={subItem.href}>
+                                            <span>{subItem.title}</span>
+                                        </Link>
+                                    </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                            ) : null,
+                        )}
                     </SidebarMenuSub>
                 </CollapsibleContent>
             </SidebarMenuItem>
@@ -73,11 +75,13 @@ export function NavMain({ items }: { items: NavItem[] }) {
             <SidebarGroupLabel>Platform</SidebarGroupLabel>
             <SidebarMenu>
                 {items.map((item) =>
-                    item.items ? (
-                        <DropdownLink item={item} />
-                    ) : (
-                        <SingleLink item={item} />
-                    ),
+                    item.show === true ? (
+                        item.items ? (
+                            <DropdownLink item={item} />
+                        ) : (
+                            <SingleLink item={item} />
+                        )
+                    ) : null,
                 )}
             </SidebarMenu>
         </SidebarGroup>

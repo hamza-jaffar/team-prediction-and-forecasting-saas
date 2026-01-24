@@ -51,4 +51,12 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
+
+    /**
+     * Get the teams that the user belongs to.
+     */
+    public function teams()
+    {
+        return $this->hasMany(Team::class);
+    }
 }

@@ -9,17 +9,9 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import team from '@/routes/team';
-import type { NavItem } from '@/types';
-import {
-    AudioWaveform,
-    Bot,
-    Command,
-    GalleryVerticalEnd,
-    LayoutGrid,
-    Settings,
-    SquareTerminal,
-    Users,
-} from 'lucide-react';
+import type { NavItem, SharedData } from '@/types';
+import { usePage } from '@inertiajs/react';
+import { Bot, LayoutGrid, Settings, SquareTerminal, Users } from 'lucide-react';
 import { TeamSwitcher } from './team-switcher';
 
 const mainNavItems: NavItem[] = [
@@ -27,29 +19,35 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+        show: true,
     },
     {
         title: 'Team',
         href: team.create(),
         icon: Users,
+        show: true,
     },
     {
         title: 'Playground',
         href: '#',
         icon: SquareTerminal,
+        show: true,
         isActive: true,
         items: [
             {
                 title: 'History',
                 href: '#',
+                show: true,
             },
             {
                 title: 'Starred',
                 href: '#',
+                show: false,
             },
             {
                 title: 'Settings',
                 href: '#',
+                show: true,
             },
         ],
     },
@@ -57,18 +55,22 @@ const mainNavItems: NavItem[] = [
         title: 'Models',
         href: '#',
         icon: Bot,
+        show: true,
         items: [
             {
                 title: 'Genesis',
                 href: '#',
+                show: true,
             },
             {
                 title: 'Explorer',
                 href: '#',
+                show: true,
             },
             {
                 title: 'Quantum',
                 href: '#',
+                show: true,
             },
         ],
     },
@@ -82,25 +84,10 @@ const footerNavItems: NavItem[] = [
     },
 ];
 
-const teams = [
-    {
-        name: 'Acme Inc',
-        logo: GalleryVerticalEnd,
-        plan: 'Enterprise',
-    },
-    {
-        name: 'Acme Corp.',
-        logo: AudioWaveform,
-        plan: 'Startup',
-    },
-    {
-        name: 'Evil Corp.',
-        logo: Command,
-        plan: 'Free',
-    },
-];
-
 export function AppSidebar() {
+    const { auth } = usePage<SharedData>().props;
+    const teams = auth.user.teams || [];
+
     return (
         <Sidebar collapsible="offcanvas" variant="inset">
             <SidebarHeader>

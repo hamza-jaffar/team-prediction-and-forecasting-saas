@@ -17,4 +17,20 @@ class Team extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Get the users that belong to the team.
+     */
+    public function users()
+    {
+        return $this->belongsToMany(User::class)->withPivot('role')->withTimestamps();
+    }
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 }

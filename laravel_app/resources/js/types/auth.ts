@@ -1,3 +1,13 @@
+export type Team = {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+    user_id: number;
+    created_at: string;
+    updated_at: string;
+};
+
 export type User = {
     id: number;
     first_name: string;
@@ -6,6 +16,7 @@ export type User = {
     avatar?: string;
     email_verified_at: string | null;
     two_factor_enabled?: boolean;
+    teams?: Team[];
     created_at: string;
     updated_at: string;
     [key: string]: unknown;
@@ -13,6 +24,7 @@ export type User = {
 
 export type Auth = {
     user: User;
+    active_team?: Team | null;
 };
 
 export type TwoFactorSetupData = {
