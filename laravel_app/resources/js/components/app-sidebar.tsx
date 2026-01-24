@@ -6,16 +6,21 @@ import {
     SidebarContent,
     SidebarFooter,
     SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import team from '@/routes/team';
 import type { NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Users } from 'lucide-react';
-import AppLogo from './app-logo';
+import {
+    AudioWaveform,
+    Bot,
+    Command,
+    GalleryVerticalEnd,
+    LayoutGrid,
+    Settings,
+    SquareTerminal,
+    Users,
+} from 'lucide-react';
+import { TeamSwitcher } from './team-switcher';
 
 const mainNavItems: NavItem[] = [
     {
@@ -28,34 +33,78 @@ const mainNavItems: NavItem[] = [
         href: team.create(),
         icon: Users,
     },
+    {
+        title: 'Playground',
+        href: '#',
+        icon: SquareTerminal,
+        isActive: true,
+        items: [
+            {
+                title: 'History',
+                href: '#',
+            },
+            {
+                title: 'Starred',
+                href: '#',
+            },
+            {
+                title: 'Settings',
+                href: '#',
+            },
+        ],
+    },
+    {
+        title: 'Models',
+        href: '#',
+        icon: Bot,
+        items: [
+            {
+                title: 'Genesis',
+                href: '#',
+            },
+            {
+                title: 'Explorer',
+                href: '#',
+            },
+            {
+                title: 'Quantum',
+                href: '#',
+            },
+        ],
+    },
 ];
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
+        title: 'Settings',
+        href: '#',
+        icon: Settings,
+    },
+];
+
+const teams = [
+    {
+        name: 'Acme Inc',
+        logo: GalleryVerticalEnd,
+        plan: 'Enterprise',
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
+        name: 'Acme Corp.',
+        logo: AudioWaveform,
+        plan: 'Startup',
+    },
+    {
+        name: 'Evil Corp.',
+        logo: Command,
+        plan: 'Free',
     },
 ];
 
 export function AppSidebar() {
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="offcanvas" variant="inset">
             <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
-                                <AppLogo />
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
+                <TeamSwitcher teams={teams} />
             </SidebarHeader>
 
             <SidebarContent>
