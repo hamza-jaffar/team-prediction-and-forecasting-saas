@@ -1,7 +1,9 @@
+import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import project from '@/routes/project';
 import { BreadcrumbItem } from '@/types';
+import { Head } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -10,12 +12,24 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
     {
         title: 'Project',
-        href: project.edit({ id: 1 }).url,
+        href: project.edit({ slug: 1 }).url,
     },
 ];
 
 const ProjectIndex = () => {
-    return <AppLayout breadcrumbs={breadcrumbs}>ProjectIndex</AppLayout>;
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Edit Project" />
+            <section className="py-6">
+                <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                    <Heading
+                        title="Edit Project"
+                        description="Edit your project"
+                    />
+                </div>
+            </section>
+        </AppLayout>
+    );
 };
 
 export default ProjectIndex;

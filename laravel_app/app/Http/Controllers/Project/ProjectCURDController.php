@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Project;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\Project\CreateEditProjectRequest;
+use App\Service\ProjectService;
 use Inertia\Inertia;
+use Log;
 
 class ProjectCURDController extends Controller
 {
@@ -18,8 +20,16 @@ class ProjectCURDController extends Controller
         return Inertia::render('project/create');
     }
 
-    public function store(Request $request)
+    public function store(CreateEditProjectRequest $request)
     {
-        dd($request->all());
+        try {
+            ProjectService::create($request->validated());
+
+            return redirect()->route('project.index')->with('success', 'Project created successfully created.');
+        } catch (\Exception $e) {
+            Log::error('Failed to create project: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Failed to create project.');
+        }
     }
 }

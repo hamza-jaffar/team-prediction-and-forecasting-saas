@@ -3,7 +3,7 @@
 use App\Http\Controllers\Project\ProjectCURDController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('project')->name('project.')->group(function () {
+Route::prefix('project')->middleware('auth')->name('project.')->group(function () {
     Route::get('/', [ProjectCURDController::class, 'index'])->name('index');
     Route::get('/create', [ProjectCURDController::class, 'create'])->name('create');
     Route::post('/store', [ProjectCURDController::class, 'store'])->name('store');
