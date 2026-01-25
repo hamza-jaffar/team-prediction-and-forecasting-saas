@@ -14,3 +14,13 @@ export type SharedData = {
     };
     [key: string]: unknown;
 };
+
+export interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+export type PageProps<
+    T extends Record<string, unknown> = Record<string, unknown>,
+> = T & SharedData;
