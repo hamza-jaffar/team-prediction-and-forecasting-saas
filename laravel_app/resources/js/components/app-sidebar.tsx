@@ -9,14 +9,22 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { edit as editAppearance } from '@/routes/appearance';
+import project from '@/routes/project';
+import task from '@/routes/task';
 import team from '@/routes/team';
 import type { NavItem, SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
-import { Building2, LayoutGrid, Settings, UserCog } from 'lucide-react';
+import {
+    Building2,
+    ClipboardCheck,
+    Folders,
+    LayoutGrid,
+    Settings,
+    UserCog,
+} from 'lucide-react';
 import { TeamSwitcher } from './team-switcher';
 
 export function AppSidebar() {
-    const { url } = usePage();
     const { auth } = usePage<SharedData>().props;
     const teams = auth.user.teams || [];
 
@@ -51,6 +59,32 @@ export function AppSidebar() {
                     href: auth.active_team
                         ? team.roles.index(auth.active_team.slug).url
                         : '#',
+                    show: true,
+                },
+            ],
+        },
+        {
+            title: 'Project',
+            href: '#',
+            icon: Folders,
+            show: true,
+            items: [
+                {
+                    title: 'Index',
+                    href: project.index().url,
+                    show: true,
+                },
+            ],
+        },
+        {
+            title: 'Task',
+            href: '#',
+            icon: ClipboardCheck,
+            show: true,
+            items: [
+                {
+                    title: 'Index',
+                    href: task.index().url,
                     show: true,
                 },
             ],
