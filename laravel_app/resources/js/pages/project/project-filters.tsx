@@ -40,7 +40,7 @@ const ProjectFilters = ({
                     />
                 </div>
                 <Select value={sortField} onValueChange={onSortChange}>
-                    <SelectTrigger className="w-[160px]">
+                    <SelectTrigger className="w-40">
                         <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
                     <SelectContent>

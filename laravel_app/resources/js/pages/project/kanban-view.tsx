@@ -137,7 +137,7 @@ const KanbanView = ({
                                                         : 'TBD'}
                                                 </span>
                                             </div>
-                                            <span>{proj.owner.name}</span>
+                                            <span>{proj.owner.first_name}</span>
                                         </div>
                                     </CardContent>
                                 </Card>

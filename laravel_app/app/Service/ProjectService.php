@@ -22,7 +22,7 @@ class ProjectService
 
     public static function getProjects($request)
     {
-        $query = Project::with(['owner:id,name'])->whereNull('deleted_at');
+        $query = Project::with(['owner'])->whereNull('deleted_at');
 
         if ($request->has('search')) {
             $query->where('name', 'like', '%'.$request->search.'%');
@@ -39,7 +39,7 @@ class ProjectService
 
     public static function getProjectBySlug($slug)
     {
-        return Project::with(['owner:id,name'])->where('slug', $slug)->firstOrFail();
+        return Project::with(['owner'])->where('slug', $slug)->firstOrFail();
     }
 
     public static function update($slug, array $data)

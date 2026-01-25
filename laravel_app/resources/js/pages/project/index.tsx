@@ -33,6 +33,7 @@ interface ProjectIndexProps extends PageProps {
 }
 
 const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
+    console.log(projects)
     const [view, setView] = useState<'table' | 'kanban'>('table');
     const [search, setSearch] = useState(queryParams?.search || '');
     const [sortField, setSortField] = useState(
