@@ -8,6 +8,7 @@ import {
     SidebarHeader,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { edit as editAppearance } from '@/routes/appearance';
 import team from '@/routes/team';
 import type { NavItem, SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
@@ -59,7 +60,7 @@ export function AppSidebar() {
     const footerNavItems: NavItem[] = [
         {
             title: 'Settings',
-            href: '#',
+            href: editAppearance().url,
             icon: Settings,
         },
     ];

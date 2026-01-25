@@ -100,4 +100,14 @@ class User extends Authenticatable
 
         return $role->permissions()->where('slug', $permission)->exists();
     }
+
+    public function sessions()
+    {
+        return $this->hasMany(Session::class);
+    }
+
+    public function loginActivities()
+    {
+        return $this->hasMany(LoginActivity::class);
+    }
 }
