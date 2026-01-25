@@ -21,8 +21,13 @@ class ProjectTeams extends Model
         return $this->belongsTo(Project::class);
     }
 
-    public function user()
+    public function team()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Team::class);
+    }
+
+    public function users()
+    {
+        return $this->team->users();
     }
 }
