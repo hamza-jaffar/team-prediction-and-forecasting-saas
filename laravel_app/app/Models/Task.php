@@ -17,6 +17,7 @@ class Task extends Model
         'team_id',
         'created_by',
         'title',
+        'slug',
         'description',
         'status',
         'priority',

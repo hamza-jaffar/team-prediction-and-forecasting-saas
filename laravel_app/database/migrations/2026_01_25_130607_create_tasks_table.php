@@ -19,6 +19,7 @@ return new class extends Migration
 
             $table->string('title');
             $table->text('description')->nullable();
+            $table->string('slug')->nullable();
 
             $table->enum('status', ['todo', 'in_progress', 'blocked', 'done'])->default('todo')->index();
             $table->enum('priority', ['low', 'medium', 'high', 'critical'])->default('medium')->index();

@@ -19,7 +19,9 @@ import {
     ClipboardCheck,
     Folders,
     LayoutGrid,
+    PlusCircle,
     Settings,
+    TableOfContents,
     UserCog,
 } from 'lucide-react';
 import { TeamSwitcher } from './team-switcher';
@@ -73,6 +75,13 @@ export function AppSidebar() {
                     title: 'Index',
                     href: project.index().url,
                     show: true,
+                    icon: TableOfContents,
+                },
+                {
+                    title: 'Create',
+                    href: project.create().url,
+                    show: true,
+                    icon: PlusCircle,
                 },
             ],
         },

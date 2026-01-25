@@ -18,14 +18,23 @@ import {
     SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
 import { NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
+
+const resolveHref = (href: NavItem['href']) =>
+    typeof href === 'string' ? href : href.url;
 
 const DropdownLink = ({ item }: { item: NavItem }) => {
+    const { url } = usePage();
+
+    const isActive = item.items?.some(
+        (subItem) => resolveHref(subItem.href) === url,
+    );
+
     return (
         <Collapsible
             key={item.title}
             asChild
-            defaultOpen={item.isActive}
+            defaultOpen={isActive}
             className="group/collapsible"
         >
             <SidebarMenuItem>
@@ -41,8 +50,14 @@ const DropdownLink = ({ item }: { item: NavItem }) => {
                         {item.items?.map((subItem) =>
                             subItem.show === true ? (
                                 <SidebarMenuSubItem key={subItem.title}>
-                                    <SidebarMenuSubButton asChild>
+                                    <SidebarMenuSubButton
+                                        isActive={
+                                            resolveHref(subItem.href) === url
+                                        }
+                                        asChild
+                                    >
                                         <Link href={subItem.href}>
+                                            {subItem.icon && <subItem.icon />}
                                             <span>{subItem.title}</span>
                                         </Link>
                                     </SidebarMenuSubButton>
@@ -57,9 +72,14 @@ const DropdownLink = ({ item }: { item: NavItem }) => {
 };
 
 const SingleLink = ({ item }: { item: NavItem }) => {
+    const { url } = usePage();
+
     return (
         <SidebarMenuItem>
-            <SidebarMenuSubButton asChild>
+            <SidebarMenuSubButton
+                isActive={resolveHref(item.href) === url}
+                asChild
+            >
                 <Link href={item.href}>
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>

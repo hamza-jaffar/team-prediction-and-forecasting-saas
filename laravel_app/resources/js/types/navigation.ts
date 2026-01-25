@@ -16,5 +16,7 @@ export type NavItem = {
         title: string;
         href: string;
         show?: boolean;
+        icon?: LucideIcon | null;
+        isActive?: boolean;
     }[];
 };
