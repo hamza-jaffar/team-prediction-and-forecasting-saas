@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Project\CreateEditProjectRequest;
 use App\Service\ProjectService;
 use Inertia\Inertia;
-use Log;
+use Illuminate\Support\Facades\Log;
 
 class ProjectCURDController extends Controller
 {

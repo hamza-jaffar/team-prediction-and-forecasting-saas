@@ -107,9 +107,9 @@ export default function Roles() {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
+                    <div className="border p-4 shadow-2xl sm:rounded-lg sm:p-8">
                         <header>
-                            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                            <h2 className="text-lg font-medium">
                                 {editingRole
                                     ? 'Edit Role'
                                     : 'Create Custom Role'}
@@ -127,8 +127,8 @@ export default function Roles() {
                                         <Label>Role Name</Label>
                                         <Input
                                             type="text"
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"
                                             value={data.name}
+                                            placeholder="Enter the role name"
                                             onChange={(e) =>
                                                 setData('name', e.target.value)
                                             }
@@ -140,8 +140,8 @@ export default function Roles() {
                                     <div>
                                         <Label>Description (Optional)</Label>
                                         <Textarea
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"
                                             value={data.description}
+                                            className="Enter the desc of this role"
                                             onChange={(e) =>
                                                 setData(
                                                     'description',
@@ -210,7 +210,7 @@ export default function Roles() {
                     </div>
 
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
+                        <div className="border p-4 shadow-2xl sm:rounded-lg sm:p-8">
                             <h3 className="text-md mb-4 font-semibold text-gray-900 dark:text-gray-100">
                                 Team Roles
                             </h3>
@@ -296,7 +296,7 @@ export default function Roles() {
                             </div>
                         </div>
 
-                        <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
+                        <div className="border p-4 shadow-2xl sm:rounded-lg sm:p-8">
                             <h3 className="text-md mb-4 font-semibold text-gray-900 dark:text-gray-100">
                                 Global Roles (Read-Only)
                             </h3>
@@ -304,7 +304,7 @@ export default function Roles() {
                                 {globalRoles.map((role) => (
                                     <div
                                         key={role.id}
-                                        className="rounded-md border bg-gray-50 p-4 opacity-75 dark:border-gray-600 dark:bg-gray-700"
+                                        className="rounded-md border bg-gray-50 p-4 opacity-75 dark:border-gray-600 dark:bg-gray-800"
                                     >
                                         <h4 className="font-medium text-gray-900 dark:text-gray-100">
                                             {role.name}

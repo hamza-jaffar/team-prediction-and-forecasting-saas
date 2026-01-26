@@ -14,6 +14,7 @@ import {
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { Separator } from '@/components/ui/separator';
+import { UserInfo } from '@/components/user-info';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import projectRoute from '@/routes/project';
@@ -25,6 +26,7 @@ import {
     CalendarIcon,
     ChevronDownIcon,
     EditIcon,
+    PlusCircle,
     SettingsIcon,
     UsersIcon,
 } from 'lucide-react';
@@ -94,7 +96,10 @@ const mockProjectStats = {
     totalTasks: 47,
     completedTasks: 31,
     activeTasks: 12,
-    members: mockProjectTeams.reduce((sum, team) => sum + team.members.length, 0),
+    members: mockProjectTeams.reduce(
+        (sum, team) => sum + team.members.length,
+        0,
+    ),
 };
 
 const ProjectSetting = ({ project }: { project: Project }) => {
@@ -263,28 +268,7 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                                     Project Owner
                                 </label>
                                 <div className="mt-2 flex items-center gap-3">
-                                    <Avatar className="h-8 w-8">
-                                        <AvatarImage
-                                            src={`https://i.pravatar.cc/150?img=${project.owner.id}`}
-                                        />
-                                        <AvatarFallback>
-                                            {project.owner.first_name
-                                                ?.charAt(0)
-                                                .toUpperCase()}
-                                            {project.owner.last_name
-                                                ?.charAt(0)
-                                                .toUpperCase()}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <p className="text-sm font-medium">
-                                            {project.owner.first_name}{' '}
-                                            {project.owner.last_name}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {project.owner.email}
-                                        </p>
-                                    </div>
+                                    <UserInfo user={project.owner} showEmail />
                                 </div>
                             </div>
                         </CardContent>
@@ -311,7 +295,7 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                                 </div>
                                 <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
                                     <div
-                                        className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
+                                        className="h-full bg-linear-to-r from-blue-500 to-blue-600 transition-all duration-500"
                                         style={{
                                             width: `${progressPercentage}%`,
                                         }}
@@ -368,10 +352,13 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                 {/* Teams Card */}
                 <Card>
                     <CardHeader className="border-b pb-3">
-                        <CardTitle className="flex items-center gap-2">
-                            <UsersIcon className="h-5 w-5" />
-                            Project Teams
-                        </CardTitle>
+                        <div className='flex w-full items-center justify-between'>
+                            <CardTitle className="flex items-center gap-2">
+                                <UsersIcon className="h-5 w-5" />
+                                Project Teams
+                            </CardTitle>
+                            <Button className='cursor-pointer'> <PlusCircle /> Add Team</Button>
+                        </div>
                         <CardDescription>
                             Teams assigned to this project (read-only)
                         </CardDescription>
@@ -385,7 +372,7 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                                     onOpenChange={() => toggleTeam(team.id)}
                                 >
                                     <CollapsibleTrigger asChild>
-                                        <button className="flex w-full items-center justify-between rounded-lg border p-4 text-left hover:bg-muted/50 transition-colors">
+                                        <button className="flex w-full items-center justify-between rounded-lg border p-4 text-left transition-colors hover:bg-muted/50">
                                             <div className="flex-1">
                                                 <h3 className="text-base font-semibold text-foreground">
                                                     {team.name}
@@ -411,7 +398,7 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                                         </button>
                                     </CollapsibleTrigger>
 
-                                    <CollapsibleContent className=" rounded-xl mt-2 bg-muted/30 px-4 py-3">
+                                    <CollapsibleContent className="mt-2 rounded-xl border bg-muted/30 px-4 py-3">
                                         <div className="space-y-3">
                                             <p className="text-xs font-medium text-muted-foreground">
                                                 {team.members.length} Member
@@ -422,7 +409,7 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                                             {team.members.map((member) => (
                                                 <div
                                                     key={member.id}
-                                                    className="flex items-center justify-between rounded-md border-b border-dashed px-3 py-2"
+                                                    className="flex items-center justify-between border-b border-dashed px-3 py-2"
                                                 >
                                                     <div className="flex items-center gap-3">
                                                         <Avatar className="h-8 w-8">
@@ -438,9 +425,7 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                                                                         (n) =>
                                                                             n[0],
                                                                     )
-                                                                    .join(
-                                                                        '',
-                                                                    )}
+                                                                    .join('')}
                                                             </AvatarFallback>
                                                         </Avatar>
                                                         <div>
@@ -468,9 +453,7 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                     </CardContent>
                 </Card>
 
-                {/* Additional Settings Cards */}
-                <div className="grid gap-6 md:grid-cols-2">
-                    {/* Notifications Card */}
+                {/* <div className="grid gap-6 md:grid-cols-2">
                     <Card>
                         <CardHeader>
                             <CardTitle>Notifications</CardTitle>
@@ -513,7 +496,7 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                             </div>
                         </CardContent>
                     </Card>
-                </div>
+                </div> */}
             </div>
         </AppLayout>
     );

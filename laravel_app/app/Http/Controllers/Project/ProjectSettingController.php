@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Project;
 use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use App\Service\ProjectService;
-use log;
+use Illuminate\Support\Facades\Log;
 
 class ProjectSettingController extends Controller
 {

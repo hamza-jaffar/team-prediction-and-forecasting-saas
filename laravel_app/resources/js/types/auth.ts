@@ -29,7 +29,7 @@ export type User = {
     first_name: string;
     last_name: string;
     email: string;
-    avatar?: string;
+    profile_pic?: string;
     email_verified_at: string | null;
     two_factor_enabled?: boolean;
     teams?: Team[];
