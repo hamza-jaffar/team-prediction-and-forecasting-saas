@@ -17,7 +17,7 @@ import {
     MoreHorizontalIcon,
     Trash2Icon,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export interface KanbanViewProps {
     projects: Project[];
@@ -31,22 +31,36 @@ const KanbanView = ({
     onDeleteClick,
 }: KanbanViewProps) => {
     const [draggedProject, setDraggedProject] = useState<Project | null>(null);
+    const [loadingProjectId, setLoadingProjectId] = useState<number | null>(null);
+    const [dragOverStatus, setDragOverStatus] = useState<string | null>(null);
     const statuses = ['active', 'completed', 'archived'];
+
+    // Clear loading state when projects update (after status change completes)
+    useEffect(() => {
+        setLoadingProjectId(null);
+    }, [projects]);
 
     const handleDragStart = (proj: Project) => {
         setDraggedProject(proj);
     };
 
-    const handleDragOver = (e: React.DragEvent) => {
+    const handleDragOver = (e: React.DragEvent, status: string) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
+        setDragOverStatus(status);
+    };
+
+    const handleDragLeave = () => {
+        setDragOverStatus(null);
     };
 
     const handleDrop = (status: string) => {
         if (draggedProject && draggedProject.status !== status) {
+            setLoadingProjectId(draggedProject.id);
             onStatusChange(draggedProject.slug, status);
         }
         setDraggedProject(null);
+        setDragOverStatus(null);
     };
 
     return (
@@ -54,8 +68,13 @@ const KanbanView = ({
             {statuses.map((status) => (
                 <div
                     key={status}
-                    className="flex h-full flex-col rounded-lg border bg-muted/40 p-4"
-                    onDragOver={handleDragOver}
+                    className={`flex h-full flex-col rounded-lg border bg-muted/40 p-4 transition-all ${
+                        dragOverStatus === status
+                            ? 'border-blue-500 bg-blue-50/50 ring-2 ring-blue-200'
+                            : ''
+                    }`}
+                    onDragOver={(e) => handleDragOver(e, status)}
+                    onDragLeave={handleDragLeave}
                     onDrop={() => handleDrop(status)}
                 >
                     <div className="mb-4 flex items-center justify-between">
@@ -74,13 +93,26 @@ const KanbanView = ({
                                     key={proj.id}
                                     draggable
                                     onDragStart={() => handleDragStart(proj)}
-                                    className="cursor-move transition-all hover:shadow-md"
+                                    className={`cursor-move transition-all duration-200 ${
+                                        draggedProject?.id === proj.id
+                                            ? 'scale-105 shadow-2xl ring-2 ring-blue-400'
+                                            : loadingProjectId === proj.id
+                                              ? 'shadow-lg'
+                                              : 'hover:shadow-md'
+                                    }`}
                                 >
                                     <CardHeader className="p-4 pb-2">
                                         <div className="flex items-start justify-between">
-                                            <CardTitle className="text-base font-medium">
-                                                {proj.name}
-                                            </CardTitle>
+                                            <div className="flex-1">
+                                                <CardTitle className="text-base font-medium">
+                                                    {proj.name}
+                                                </CardTitle>
+                                                {loadingProjectId === proj.id && (
+                                                    <p className="mt-1 text-xs text-muted-foreground animate-pulse">
+                                                        Moving...
+                                                    </p>
+                                                )}
+                                            </div>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
                                                     <Button

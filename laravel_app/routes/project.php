@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Project\ProjectCURDController;
+use App\Http\Controllers\Project\ProjectSettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('project')->middleware('auth')->name('project.')->group(function () {
@@ -13,5 +14,5 @@ Route::prefix('project')->middleware('auth')->name('project.')->group(function (
     Route::patch('/restore/{slug}', [ProjectCURDController::class, 'restore'])->name('restore');
     Route::delete('/force-delete/{slug}', [ProjectCURDController::class, 'forceDelete'])->name('force_delete');
     Route::patch('/update-status/{slug}', [ProjectCURDController::class, 'updateStatus'])->name('update_status');
+    Route::get('/{slug}/settings', [ProjectSettingController::class, 'index'])->name('settings');
 });
-

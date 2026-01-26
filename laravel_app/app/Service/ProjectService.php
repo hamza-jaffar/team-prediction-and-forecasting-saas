@@ -22,19 +22,23 @@ class ProjectService
 
     public static function getProjects($request)
     {
-        $query = Project::with(['owner'])->whereNull('deleted_at');
+        try {
+            $query = Project::with(['owner'])->where('created_by', Auth::id())->whereNull('deleted_at');
 
-        if ($request->has('search')) {
-            $query->where('name', 'like', '%'.$request->search.'%');
+            if ($request->has('search')) {
+                $query->where('name', 'like', '%'.$request->search.'%');
+            }
+
+            if ($request->has('sort_field') && $request->has('sort_direction')) {
+                $query->orderBy($request->sort_field, $request->sort_direction);
+            } else {
+                $query->orderBy('created_at', 'desc');
+            }
+
+            return $query->paginate($request->per_page ?? 10);
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
-
-        if ($request->has('sort_field') && $request->has('sort_direction')) {
-            $query->orderBy($request->sort_field, $request->sort_direction);
-        } else {
-            $query->orderBy('created_at', 'desc');
-        }
-
-        return $query->paginate($request->per_page ?? 10);
     }
 
     public static function getProjectBySlug($slug)

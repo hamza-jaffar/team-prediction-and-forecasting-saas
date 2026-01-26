@@ -47,7 +47,14 @@ const ProjectTableRow = ({
 
     return (
         <tr className="border-b transition-colors hover:bg-muted/50">
-            <td className="p-4 font-medium">{proj.name}</td>
+            <td className="p-4 font-medium">
+                <Link
+                    href={project.settings(proj.slug)}
+                    className="hover:underline"
+                >
+                    {proj.name}
+                </Link>
+            </td>
             <td className="p-4">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -60,13 +67,13 @@ const ProjectTableRow = ({
                             className="flex cursor-pointer items-center gap-1"
                         >
                             {loadingStatus && <Spinner className="h-3 w-3" />}
-                            {!loadingStatus && (
-                                <>
-                                    {statusConfig[
-                                        proj.status as keyof typeof statusConfig
-                                    ]?.label || proj.status}
-                                </>
-                            )}
+                            {/* {!loadingStatus && (
+                            )} */}
+                            <>
+                                {statusConfig[
+                                    proj.status as keyof typeof statusConfig
+                                ]?.label || proj.status}
+                            </>
                         </Badge>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
@@ -105,8 +112,8 @@ const ProjectTableRow = ({
                     </span>
                 </div>
             </td>
-            <td className="p-4 flex items-center gap-2">
-                <UserInfo user={proj.owner} showEmail/>
+            <td className="flex items-center gap-2 p-4">
+                <UserInfo user={proj.owner} showEmail />
             </td>
             <td className="p-4 text-muted-foreground">
                 {format(new Date(proj.created_at), 'MMM d, yyyy')}

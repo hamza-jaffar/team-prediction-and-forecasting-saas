@@ -94,12 +94,12 @@ export function NavMain({ items }: { items: NavItem[] }) {
         <SidebarGroup>
             <SidebarGroupLabel>Platform</SidebarGroupLabel>
             <SidebarMenu>
-                {items.map((item) =>
+                {items.map((item, index) =>
                     item.show === true ? (
                         item.items ? (
-                            <DropdownLink item={item} />
+                            <DropdownLink key={index} item={item} />
                         ) : (
-                            <SingleLink item={item} />
+                            <SingleLink key={index} item={item} />
                         )
                     ) : null,
                 )}
