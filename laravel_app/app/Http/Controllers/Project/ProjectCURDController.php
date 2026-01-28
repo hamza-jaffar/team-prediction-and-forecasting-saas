@@ -14,9 +14,13 @@ class ProjectCURDController extends Controller
     {
         $projects = ProjectService::getProjects($request);
 
+        if ($request->wantsJson()) {
+            return response()->json($projects);
+        }
+
         return Inertia::render('project/index', [
             'projects' => $projects,
-            'queryParams' => $request->query() ?: null,
+            'queryParams' => $request->all(['search', 'sort_field', 'sort_direction', 'trashed', 'status', 'start_date', 'end_date']),
         ]);
     }
 

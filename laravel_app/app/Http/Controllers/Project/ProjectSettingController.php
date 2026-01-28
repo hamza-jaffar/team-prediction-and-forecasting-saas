@@ -48,11 +48,41 @@ class ProjectSettingController extends Controller
 
             ProjectService::removeTeam($projectId, $teamId);
 
-            return redirect()->route('project.settings', $project->slug)->with('success', 'Team removed successfully.');
+            return redirect()->route('project.settings', $project->slug)->with('success', 'Team moved to trash.');
         } catch (\Exception $e) {
             Log::error('Failed to remove team: '.$e->getMessage());
 
             return redirect()->back()->with('error', 'Failed to remove team.');
+        }
+    }
+
+    public function restoreTeam(string $projectId, string $teamId)
+    {
+        try {
+            $project = ProjectService::getProjectById($projectId);
+
+            ProjectService::restoreTeam($projectId, $teamId);
+
+            return redirect()->route('project.settings', $project->slug)->with('success', 'Team restored successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to restore team: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Failed to restore team.');
+        }
+    }
+
+    public function forceDeleteTeam(string $projectId, string $teamId)
+    {
+        try {
+            $project = ProjectService::getProjectById($projectId);
+
+            ProjectService::forceDeleteTeam($projectId, $teamId);
+
+            return redirect()->route('project.settings', $project->slug)->with('success', 'Team permanently deleted.');
+        } catch (\Exception $e) {
+            Log::error('Failed to permanently delete team: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Failed to permanently delete team.');
         }
     }
 }

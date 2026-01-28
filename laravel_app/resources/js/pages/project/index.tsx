@@ -6,13 +6,14 @@ import project from '@/routes/project';
 import { BreadcrumbItem, PageProps, PaginationLink } from '@/types';
 import { Project } from '@/types/project';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { PlusIcon } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { PlusIcon, Trash2Icon } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import DeleteProjectDialog from './delete-project-dialog';
 import KanbanView from './kanban-view';
 import ProjectFilters from './project-filters';
 import ProjectPagination from './project-pagination';
 import ProjectTable from './project-table';
+import ProjectTrashModal from './project-trash-modal';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: dashboard().url },
@@ -41,20 +42,79 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
     const [sortDirection, setSortDirection] = useState(
         queryParams?.sort_direction || 'desc',
     );
+    const [trashed, setTrashed] = useState<string>(queryParams?.trashed || '');
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [trashModalOpen, setTrashModalOpen] = useState(false);
+    const [status, setStatus] = useState(queryParams?.status || 'all');
+    const [startDate, setStartDate] = useState(queryParams?.start_date || '');
+    const [endDate, setEndDate] = useState(queryParams?.end_date || '');
     const [selectedProject, setSelectedProject] = useState<Project | null>(
         null,
     );
+    const [isFiltering, setIsFiltering] = useState(false);
     const { delete: deleteProject, processing: isDeleting } = useForm();
 
-    const handleSearch = useCallback(
-        (value: string) => {
-            setSearch(value);
+    const isFirstRun = useRef(true);
+
+    const handleSearch = useCallback((value: string) => {
+        setSearch(value);
+    }, []);
+
+    useEffect(() => {
+        if (isFirstRun.current) {
+            isFirstRun.current = false;
+            return;
+        }
+
+        const handler = setTimeout(() => {
             router.get(
                 project.index().url,
-                { ...queryParams, search: value },
-                { preserveState: true, replace: true },
+                { ...queryParams, search: search || undefined },
+                {
+                    preserveState: true,
+                    replace: true,
+                    onStart: () => setIsFiltering(true),
+                    onFinish: () => setIsFiltering(false),
+                },
             );
+        }, 500);
+
+        return () => clearTimeout(handler);
+    }, [search]);
+
+    const handleTrashedChange = useCallback(
+        (value: string) => {
+            setTrashed(value);
+            router.get(
+                project.index().url,
+                { ...queryParams, trashed: value || undefined },
+                { preserveState: true },
+            );
+        },
+        [queryParams],
+    );
+
+    const handleFilterChange = useCallback(
+        (filters: any) => {
+            const newParams = { ...queryParams, ...filters };
+            // Remove empty params
+            Object.keys(newParams).forEach((key) => {
+                if (
+                    newParams[key] === '' ||
+                    newParams[key] === 'all' ||
+                    newParams[key] === null ||
+                    newParams[key] === undefined
+                ) {
+                    delete newParams[key];
+                }
+            });
+
+            router.get(project.index().url, newParams, {
+                preserveState: true,
+                replace: true,
+                onStart: () => setIsFiltering(true),
+                onFinish: () => setIsFiltering(false),
+            });
         },
         [queryParams],
     );
@@ -72,7 +132,11 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
                     sort_field: field,
                     sort_direction: direction,
                 },
-                { preserveState: true },
+                {
+                    preserveState: true,
+                    onStart: () => setIsFiltering(true),
+                    onFinish: () => setIsFiltering(false),
+                },
             );
         },
         [sortField, sortDirection, queryParams],
@@ -108,6 +172,16 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
         });
     };
 
+    const handleRestoreProject = (slug: string) => {
+        router.patch(
+            project.restore(slug).url,
+            {},
+            {
+                preserveState: true,
+            },
+        );
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Projects" />
@@ -118,21 +192,33 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
                         title="Projects"
                         description="Manage and track all your projects in one place."
                     />
-                    <Link href={project.create().url}>
-                        <Button className="gap-2">
-                            <PlusIcon className="h-4 w-4" />
-                            New Project
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="outline"
+                            className="gap-2"
+                            onClick={() => setTrashModalOpen(true)}
+                        >
+                            <Trash2Icon className="h-4 w-4" />
+                            Trash
                         </Button>
-                    </Link>
+                        <Link href={project.create().url}>
+                            <Button className="gap-2">
+                                <PlusIcon className="h-4 w-4" />
+                                New Project
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Filters */}
                 <ProjectFilters
                     search={search}
-                    sortField={sortField}
+                    status={status}
+                    startDate={startDate}
+                    endDate={endDate}
                     view={view}
                     onSearchChange={handleSearch}
-                    onSortChange={handleSort}
+                    onFilterChange={handleFilterChange}
                     onViewChange={setView}
                 />
 
@@ -141,8 +227,12 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
                     <>
                         <ProjectTable
                             projects={projects.data}
+                            sortField={sortField}
+                            sortDirection={sortDirection}
+                            onSort={handleSort}
                             onStatusChange={handleStatusChange}
                             onDeleteClick={handleDeleteClick}
+                            isLoading={isFiltering}
                         />
                         <ProjectPagination
                             links={projects.links}
@@ -167,6 +257,12 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
                     project={selectedProject}
                     onConfirm={handleConfirmDelete}
                     isLoading={isDeleting}
+                />
+
+                {/* Trash Modal */}
+                <ProjectTrashModal
+                    open={trashModalOpen}
+                    onOpenChange={setTrashModalOpen}
                 />
             </div>
         </AppLayout>

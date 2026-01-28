@@ -67,8 +67,6 @@ const ProjectTableRow = ({
                             className="flex cursor-pointer items-center gap-1"
                         >
                             {loadingStatus && <Spinner className="h-3 w-3" />}
-                            {/* {!loadingStatus && (
-                            )} */}
                             <>
                                 {statusConfig[
                                     proj.status as keyof typeof statusConfig
@@ -112,7 +110,7 @@ const ProjectTableRow = ({
                     </span>
                 </div>
             </td>
-            <td className="flex items-center gap-2 p-4">
+            <td className="p-4">
                 <UserInfo user={proj.owner} showEmail />
             </td>
             <td className="p-4 text-muted-foreground">

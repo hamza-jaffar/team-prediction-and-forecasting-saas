@@ -24,12 +24,34 @@ class ProjectService
     public static function getProjects($request)
     {
         try {
-            $query = Project::with(['owner'])->where('created_by', Auth::id())->whereNull('deleted_at');
+            $query = Project::with(['owner'])
+                ->where('created_by', Auth::id());
 
-            if ($request->has('search')) {
+            // Handle Trash
+            if ($request->has('trashed') && $request->trashed === 'only') {
+                $query->onlyTrashed();
+            }
+
+            // Status Filter
+            if ($request->filled('status') && $request->status !== 'all') {
+                $query->where('status', $request->status);
+            }
+
+            // Date Filters
+            if ($request->filled('start_date')) {
+                $query->where('start_date', '>=', $request->start_date);
+            }
+
+            if ($request->filled('end_date')) {
+                $query->where('end_date', '<=', $request->end_date);
+            }
+
+            // Search
+            if ($request->filled('search')) {
                 $query->where('name', 'like', '%'.$request->search.'%');
             }
 
+            // Sorting
             if ($request->has('sort_field') && $request->has('sort_direction')) {
                 $query->orderBy($request->sort_field, $request->sort_direction);
             } else {
@@ -44,13 +66,15 @@ class ProjectService
 
     public static function getProjectBySlug($slug)
     {
-        return Project::with(['owner', 'teams.team.users', 'teams.team.roles'])->where('slug', $slug)->firstOrFail();
+        return Project::withTrashed()->with(['owner', 'teams' => function ($query) {
+            $query->withTrashed();
+        }, 'teams.team.users', 'teams.team.roles'])->where('slug', $slug)->firstOrFail();
     }
 
     public static function getProjectById($id)
     {
         try {
-            return Project::with(['owner'])->where('id', $id)->firstOrFail();
+            return Project::withTrashed()->with(['owner'])->where('id', $id)->firstOrFail();
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
@@ -136,6 +160,24 @@ class ProjectService
     {
         try {
             return ProjectTeams::where('project_id', $projectId)->where('team_id', $teamId)->delete();
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    public static function restoreTeam($projectId, $teamId): bool
+    {
+        try {
+            return ProjectTeams::onlyTrashed()->where('project_id', $projectId)->where('team_id', $teamId)->restore();
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    public static function forceDeleteTeam($projectId, $teamId): bool
+    {
+        try {
+            return ProjectTeams::onlyTrashed()->where('project_id', $projectId)->where('team_id', $teamId)->forceDelete();
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
