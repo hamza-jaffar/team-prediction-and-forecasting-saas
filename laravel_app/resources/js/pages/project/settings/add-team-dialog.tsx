@@ -27,6 +27,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { myTeams } from '@/routes';
 import projectRoute from '@/routes/project';
+import teamRoutes from '@/routes/team';
 import { Team } from '@/types';
 import { Project } from '@/types/project';
 import { Form } from '@inertiajs/react';
@@ -37,9 +38,10 @@ type Props = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     project: Project;
+    team?: Team | null;
 };
 
-const AddTeamDialog = ({ open, onOpenChange, project }: Props) => {
+const AddTeamDialog = ({ open, onOpenChange, project, team = null }: Props) => {
     const [teams, setTeams] = useState<Team[]>([]);
     const [selectedTeamId, setSelectedTeamId] = useState<string>('');
     const [loadingTeams, setLoadingTeams] = useState(false);
@@ -83,7 +85,14 @@ const AddTeamDialog = ({ open, onOpenChange, project }: Props) => {
                     </DialogDescription>
                 </DialogHeader>
                 <Form
-                    action={projectRoute.add_team(project.id)}
+                    action={
+                        team
+                            ? teamRoutes.project.add_team({
+                                  team: team.slug,
+                                  project_id: project.id,
+                              }).url
+                            : projectRoute.add_team(project.id).url
+                    }
                     onSuccess={() => {
                         onOpenChange(false);
                     }}

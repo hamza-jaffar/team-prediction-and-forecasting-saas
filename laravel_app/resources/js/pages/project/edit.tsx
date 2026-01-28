@@ -13,8 +13,9 @@ import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
-import project from '@/routes/project';
-import { BreadcrumbItem, PageProps } from '@/types';
+import projectRoute from '@/routes/project';
+import teamRoutes from '@/routes/team';
+import { BreadcrumbItem, PageProps, Team } from '@/types';
 import { Form, Head } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { ChevronDownIcon } from 'lucide-react';
@@ -35,19 +36,34 @@ interface ProjectEditProps extends PageProps {
         };
         created_at: string;
     };
+    team?: Team | null;
 }
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: dashboard().url },
-    { title: 'Project', href: project.index().url },
-];
-
-const ProjectEdit = ({ project: proj }: ProjectEditProps) => {
+const ProjectEdit = ({ project: proj, team = null }: ProjectEditProps) => {
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Dashboard',
+            href: team ? teamRoutes.dashboard(team.slug).url : dashboard().url,
+        },
+        {
+            title: 'Project',
+            href: team
+                ? teamRoutes.project.index(team.slug).url
+                : projectRoute.index().url,
+        },
+        {
+            title: 'Edit Project',
+            href: team
+                ? teamRoutes.project.edit({ team: team.slug, slug: proj.slug })
+                      .url
+                : projectRoute.edit(proj.slug).url,
+        },
+    ];
     const [startDate, setStartDate] = useState<Date | undefined>(
-        proj.start_date ? new Date(proj.start_date) : undefined
+        proj.start_date ? new Date(proj.start_date) : undefined,
     );
     const [endDate, setEndDate] = useState<Date | undefined>(
-        proj.end_date ? new Date(proj.end_date) : undefined
+        proj.end_date ? new Date(proj.end_date) : undefined,
     );
 
     return (
@@ -63,7 +79,14 @@ const ProjectEdit = ({ project: proj }: ProjectEditProps) => {
 
                     {/* Form */}
                     <Form
-                        action={project.update(proj.slug).url}
+                        action={
+                            team
+                                ? teamRoutes.project.update({
+                                      team: team.slug,
+                                      slug: proj.slug,
+                                  }).url
+                                : projectRoute.update(proj.slug).url
+                        }
                         method="PUT"
                         className="space-y-8 rounded-xl"
                     >
@@ -233,4 +256,3 @@ const ProjectEdit = ({ project: proj }: ProjectEditProps) => {
 };
 
 export default ProjectEdit;
-

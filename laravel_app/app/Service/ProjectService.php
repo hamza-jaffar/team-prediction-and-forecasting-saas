@@ -21,11 +21,18 @@ class ProjectService
         }
     }
 
-    public static function getProjects($request)
+    public static function getProjects($request, ?\App\Models\Team $team = null)
     {
         try {
-            $query = Project::with(['owner'])
-                ->where('created_by', Auth::id());
+            $query = Project::with(['owner']);
+
+            if ($team && $team->exists) {
+                $query->whereHas('teams', function ($q) use ($team) {
+                    $q->where('team_id', $team->id);
+                });
+            } else {
+                $query->where('created_by', Auth::id());
+            }
 
             // Handle Trash
             if ($request->has('trashed') && $request->trashed === 'only') {

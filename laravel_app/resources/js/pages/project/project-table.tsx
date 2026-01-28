@@ -1,3 +1,4 @@
+import { Team } from '@/types';
 import { Project } from '@/types/project';
 import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
 import ProjectTableRow from './project-table-row';
@@ -10,6 +11,7 @@ interface ProjectTableProps {
     onStatusChange: (slug: string, newStatus: string) => void;
     onDeleteClick: (project: Project) => void;
     isLoading?: boolean;
+    team?: Team | null;
 }
 
 const ProjectTable = ({
@@ -20,6 +22,7 @@ const ProjectTable = ({
     onStatusChange,
     onDeleteClick,
     isLoading,
+    team,
 }: ProjectTableProps) => {
     const renderSortIcon = (field: string) => {
         if (sortField !== field)
@@ -78,9 +81,11 @@ const ProjectTable = ({
                             <SortableHeader field="created_at">
                                 Created At
                             </SortableHeader>
-                            <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">
-                                Actions
-                            </th>
+                            {!team && (
+                                <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">
+                                    Actions
+                                </th>
+                            )}
                         </tr>
                     </thead>
                     <tbody className="[&_tr:last-child]:border-0">
@@ -89,6 +94,7 @@ const ProjectTable = ({
                                 <ProjectTableRow
                                     key={proj.id}
                                     project={proj}
+                                    team={team}
                                     onStatusChange={onStatusChange}
                                     onDeleteClick={onDeleteClick}
                                 />

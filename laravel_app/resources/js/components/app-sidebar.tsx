@@ -28,57 +28,32 @@ import { TeamSwitcher } from './team-switcher';
 
 export function AppSidebar() {
     const { auth } = usePage<SharedData>().props;
+    const activeTeam = auth.active_team;
     const teams = auth.user.teams || [];
 
-    const mainNavItems: NavItem[] = [
+    console.log(activeTeam);
+
+    const personalNavItems: NavItem[] = [
         {
             title: 'Dashboard',
-            href: dashboard(),
+            href: dashboard().url,
             icon: LayoutGrid,
             show: true,
         },
         {
-            title: 'Team',
-            href: team.create(),
-            icon: Building2,
-            show: true,
-        },
-        {
-            title: 'Users',
-            href: '#',
-            icon: UserCog,
-            show: !!auth.active_team,
-            items: [
-                {
-                    title: 'Members',
-                    href: auth.active_team
-                        ? team.members.index(auth.active_team.slug).url
-                        : '#',
-                    show: true,
-                },
-                {
-                    title: 'Roles & Permissions',
-                    href: auth.active_team
-                        ? team.roles.index(auth.active_team.slug).url
-                        : '#',
-                    show: true,
-                },
-            ],
-        },
-        {
-            title: 'Project',
+            title: 'My Projects',
             href: '#',
             icon: Folders,
             show: true,
             items: [
                 {
-                    title: 'Index',
+                    title: 'View All',
                     href: project.index().url,
                     show: true,
                     icon: TableOfContents,
                 },
                 {
-                    title: 'Create',
+                    title: 'Create New',
                     href: project.create().url,
                     show: true,
                     icon: PlusCircle,
@@ -86,14 +61,80 @@ export function AppSidebar() {
             ],
         },
         {
-            title: 'Task',
+            title: 'My Tasks',
             href: '#',
             icon: ClipboardCheck,
             show: true,
             items: [
                 {
-                    title: 'Index',
+                    title: 'View All',
                     href: task.index().url,
+                    show: true,
+                },
+            ],
+        },
+        {
+            title: 'Teams',
+            href: '#',
+            icon: Building2,
+            show: true,
+            items: [
+                {
+                    title: 'Create Team',
+                    href: team.create().url,
+                    show: true,
+                    icon: PlusCircle,
+                },
+            ],
+        },
+    ];
+
+    const teamNavItems: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: activeTeam ? team.dashboard(activeTeam.slug).url : '#',
+            icon: LayoutGrid,
+            show: true,
+        },
+        {
+            title: 'Projects',
+            href: activeTeam ? team.project.index(activeTeam.slug).url : '#',
+            icon: Folders,
+            show: true,
+        },
+        {
+            title: 'Tasks',
+            href: '#',
+            icon: ClipboardCheck,
+            show: true,
+            items: [
+                {
+                    title: 'Team Tasks',
+                    href: activeTeam
+                        ? team.task.index(activeTeam.slug).url
+                        : '#',
+                    show: true,
+                },
+            ],
+        },
+        {
+            title: 'Team Settings',
+            href: '#',
+            icon: UserCog,
+            show: true,
+            items: [
+                {
+                    title: 'Members',
+                    href: activeTeam
+                        ? team.members.index(activeTeam.slug).url
+                        : '#',
+                    show: true,
+                },
+                {
+                    title: 'Roles & Permissions',
+                    href: activeTeam
+                        ? team.roles.index(activeTeam.slug).url
+                        : '#',
                     show: true,
                 },
             ],
@@ -115,7 +156,10 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain
+                    items={activeTeam ? teamNavItems : personalNavItems}
+                    label={activeTeam ? activeTeam.name : 'Personal'}
+                />
             </SidebarContent>
 
             <SidebarFooter>

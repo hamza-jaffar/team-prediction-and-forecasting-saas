@@ -1,20 +1,23 @@
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
-import task from '@/routes/task';
-import { BreadcrumbItem } from '@/types';
+import taskRoute from '@/routes/task';
+import teamRoutes from '@/routes/team';
+import { BreadcrumbItem, Team } from '@/types';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard().url,
-    },
-    {
-        title: 'Task',
-        href: task.index().url,
-    },
-];
+const TaskIndex = ({ team = null }: { team?: Team | null }) => {
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Dashboard',
+            href: team ? teamRoutes.dashboard(team.slug).url : dashboard().url,
+        },
+        {
+            title: 'Task',
+            href: team
+                ? teamRoutes.task.index(team.slug).url
+                : taskRoute.index().url,
+        },
+    ];
 
-const TaskIndex = () => {
     return <AppLayout breadcrumbs={breadcrumbs}>TaskIndex</AppLayout>;
 };
 

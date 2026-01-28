@@ -7,25 +7,54 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { UserInfo } from '@/components/user-info';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import projectRoute from '@/routes/project';
-import { BreadcrumbItem } from '@/types';
+import teamRoutes from '@/routes/team';
+import { BreadcrumbItem, Team } from '@/types';
 import { Project } from '@/types/project';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { format } from 'date-fns';
-import { CalendarIcon, EditIcon, SettingsIcon } from 'lucide-react';
+import { CalendarIcon, EditIcon, SettingsIcon, Trash2Icon } from 'lucide-react';
+import { useState } from 'react';
+import DeleteProjectDialog from '../delete-project-dialog';
 import ProjectTeamSection from './project-team-section';
 
-const ProjectSetting = ({ project }: { project: Project }) => {
+const ProjectSetting = ({
+    project,
+    team = null,
+}: {
+    project: Project;
+    team?: Team | null;
+}) => {
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: dashboard().url },
-        { title: 'Project', href: projectRoute.index().url },
+        {
+            title: 'Dashboard',
+            href: team ? teamRoutes.dashboard(team.slug).url : dashboard().url,
+        },
+        {
+            title: 'Project',
+            href: team
+                ? teamRoutes.project.index(team.slug).url
+                : projectRoute.index().url,
+        },
         {
             title: 'Project Settings',
-            href: projectRoute.settings(project.slug).url,
+            href: team
+                ? teamRoutes.project.settings({
+                      team: team.slug,
+                      slug: project.slug,
+                  }).url
+                : projectRoute.settings(project.slug).url,
         },
     ];
 
@@ -44,11 +73,49 @@ const ProjectSetting = ({ project }: { project: Project }) => {
         return colors[status] || 'bg-gray-100 text-gray-800';
     };
 
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const { delete: deleteProject, processing: isDeleting } = useForm();
+
     const totalTasks = 0; // TODO: Implement real task counting
     const completedTasks = 0;
     const activeTasks = 0;
     const progressPercentage =
         totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+    const handleStatusChange = (newStatus: string) => {
+        const url = team
+            ? teamRoutes.project.update_status({
+                  team: team.slug,
+                  slug: project.slug,
+              }).url
+            : projectRoute.update_status(project.slug).url;
+        router.patch(url, {
+            status: newStatus,
+        });
+    };
+
+    const handleConfirmDelete = (option: 'soft' | 'permanent') => {
+        const url =
+            option === 'permanent'
+                ? team
+                    ? teamRoutes.project.force_delete({
+                          team: team.slug,
+                          slug: project.slug,
+                      }).url
+                    : projectRoute.force_delete(project.slug).url
+                : team
+                  ? teamRoutes.project.destroy({
+                        team: team.slug,
+                        slug: project.slug,
+                    }).url
+                  : projectRoute.destroy(project.slug).url;
+
+        deleteProject(url, {
+            onSuccess: () => {
+                setDeleteDialogOpen(false);
+            },
+        });
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -64,15 +131,17 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                             Manage and configure your project settings
                         </p>
                     </div>
-                    <Button variant="outline" size="lg" asChild>
-                        <Link
-                            className="flex items-center gap-2"
-                            href={projectRoute.edit(project.slug).url}
-                        >
-                            <EditIcon className="mr-2 h-4 w-4" />
-                            Edit Project
-                        </Link>
-                    </Button>
+                    {!team && (
+                        <Button variant="outline" size="lg" asChild>
+                            <Link
+                                className="flex items-center gap-2"
+                                href={projectRoute.edit(project.slug).url}
+                            >
+                                <EditIcon className="mr-2 h-4 w-4" />
+                                Edit Project
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 {/* Main Grid */}
@@ -106,7 +175,7 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                                 <label className="text-sm font-medium text-muted-foreground">
                                     Status
                                 </label>
-                                <div className="mt-2">
+                                <div className="mt-2 flex items-center gap-4">
                                     <Badge
                                         className={getStatusColor(
                                             project.status,
@@ -117,6 +186,27 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                                             .toUpperCase() +
                                             project.status.slice(1)}
                                     </Badge>
+                                    {!team && (
+                                        <Select
+                                            defaultValue={project.status}
+                                            onValueChange={handleStatusChange}
+                                        >
+                                            <SelectTrigger className="w-[140px]">
+                                                <SelectValue placeholder="Update Status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="active">
+                                                    Active
+                                                </SelectItem>
+                                                <SelectItem value="completed">
+                                                    Completed
+                                                </SelectItem>
+                                                <SelectItem value="archived">
+                                                    Archived
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
                                 </div>
                             </div>
 
@@ -263,56 +353,60 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                     </Card>
                 </div>
 
-                <ProjectTeamSection
-                    teams={project.teams || []}
-                    project={project}
-                />
-                {/* Teams Card */}
+                {!team && (
+                    <ProjectTeamSection
+                        teams={project.teams || []}
+                        project={project}
+                        team={team}
+                    />
+                )}
 
-                {/* <div className="grid gap-6 md:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Notifications</CardTitle>
-                            <CardDescription>
-                                Configure notification preferences
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-3">
+                {!team && (
+                    <>
+                        {/* Danger Zone */}
+                        <Card className="border-red-200">
+                            <CardHeader>
+                                <CardTitle className="text-red-600">
+                                    Danger Zone
+                                </CardTitle>
+                                <CardDescription>
+                                    Irreversible actions for this project
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
                                 <div className="flex items-center justify-between">
-                                    <label className="text-sm font-medium">
-                                        Email notifications
-                                    </label>
-                                    <input
-                                        type="checkbox"
-                                        defaultChecked
-                                        className="h-4 w-4 rounded"
-                                    />
+                                    <div>
+                                        <h4 className="font-medium">
+                                            Delete Project
+                                        </h4>
+                                        <p className="text-sm text-muted-foreground">
+                                            Move this project to trash. You can
+                                            restore it later.
+                                        </p>
+                                    </div>
+                                    <Button
+                                        variant="destructive"
+                                        onClick={() =>
+                                            setDeleteDialogOpen(true)
+                                        }
+                                        className="gap-2"
+                                    >
+                                        <Trash2Icon className="h-4 w-4" />
+                                        Delete Project
+                                    </Button>
                                 </div>
-                                <div className="flex items-center justify-between">
-                                    <label className="text-sm font-medium">
-                                        Task reminders
-                                    </label>
-                                    <input
-                                        type="checkbox"
-                                        defaultChecked
-                                        className="h-4 w-4 rounded"
-                                    />
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <label className="text-sm font-medium">
-                                        Team updates
-                                    </label>
-                                    <input
-                                        type="checkbox"
-                                        defaultChecked
-                                        className="h-4 w-4 rounded"
-                                    />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div> */}
+                            </CardContent>
+                        </Card>
+
+                        <DeleteProjectDialog
+                            open={deleteDialogOpen}
+                            onOpenChange={setDeleteDialogOpen}
+                            project={project}
+                            onConfirm={handleConfirmDelete}
+                            isLoading={isDeleting}
+                        />
+                    </>
+                )}
             </div>
         </AppLayout>
     );

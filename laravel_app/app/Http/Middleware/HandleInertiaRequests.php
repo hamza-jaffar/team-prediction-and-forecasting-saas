@@ -36,10 +36,18 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user()?->load('teams');
-        $activeTeam = $request->route('team');
+        $teamParam = $request->route('team');
+        
+        // Resolve team parameter to Team model instance
+        $activeTeam = null;
+        if ($teamParam instanceof \App\Models\Team) {
+            $activeTeam = $teamParam;
+        } elseif (is_string($teamParam)) {
+            $activeTeam = \App\Models\Team::where('slug', $teamParam)->first();
+        }
 
         // Update current_team_id if we are on a team specific route
-        if ($activeTeam instanceof \App\Models\Team && $user && $user->current_team_id !== $activeTeam->id) {
+        if ($activeTeam && $user && $user->current_team_id !== $activeTeam->id) {
             $user->current_team_id = $activeTeam->id;
             $user->save();
         }
@@ -55,7 +63,7 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'auth' => [
                 'user' => $user,
-                'active_team' => $activeTeam instanceof \App\Models\Team ? $activeTeam : null,
+                'active_team' => $activeTeam,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [

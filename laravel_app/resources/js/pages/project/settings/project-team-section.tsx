@@ -25,7 +25,8 @@ import {
 } from '@/components/ui/collapsible';
 
 import projectRoute from '@/routes/project';
-import { User } from '@/types';
+import teamRoutes from '@/routes/team';
+import { Team, User } from '@/types';
 import { Project } from '@/types/project';
 import { router } from '@inertiajs/react';
 import { ChevronDownIcon, PlusCircle, Trash2, UsersIcon } from 'lucide-react';
@@ -35,9 +36,11 @@ import AddTeamDialog from './add-team-dialog';
 const ProjectTeamSection = ({
     teams,
     project,
+    team = null,
 }: {
     teams: any[];
     project: Project;
+    team?: Team | null;
 }) => {
     const [expandedTeams, setExpandedTeams] = useState<number[]>([]);
     const [openAddTeamDialog, setOpenAddTeamDialog] = useState<boolean>(false);
@@ -56,14 +59,26 @@ const ProjectTeamSection = ({
 
         const isTrashed = !!teamToRemove.deleted_at;
         const url = isTrashed
-            ? projectRoute.force_delete_team({
-                  project_id: project.id,
-                  team_id: teamToRemove.team?.id,
-              }).url
-            : projectRoute.remove_team({
-                  project_id: project.id,
-                  team_id: teamToRemove.team?.id,
-              }).url;
+            ? team
+                ? teamRoutes.project.force_delete_team({
+                      team: team.slug,
+                      project_id: project.id,
+                      team_id: teamToRemove.team?.id,
+                  }).url
+                : projectRoute.force_delete_team({
+                      project_id: project.id,
+                      team_id: teamToRemove.team?.id,
+                  }).url
+            : team
+              ? teamRoutes.project.remove_team({
+                    team: team.slug,
+                    project_id: project.id,
+                    team_id: teamToRemove.team?.id,
+                }).url
+              : projectRoute.remove_team({
+                    project_id: project.id,
+                    team_id: teamToRemove.team?.id,
+                }).url;
 
         router.delete(url, {
             onSuccess: () => {
@@ -73,11 +88,18 @@ const ProjectTeamSection = ({
     };
 
     const handleRestoreTeam = (teamId: number) => {
+        const url = team
+            ? teamRoutes.project.restore_team({
+                  team: team.slug,
+                  project_id: project.id,
+                  team_id: teamId,
+              }).url
+            : projectRoute.restore_team({
+                  project_id: project.id,
+                  team_id: teamId,
+              }).url;
         router.patch(
-            projectRoute.restore_team({
-                project_id: project.id,
-                team_id: teamId,
-            }).url,
+            url,
             {},
             {
                 preserveState: true,
@@ -293,6 +315,7 @@ const ProjectTeamSection = ({
                 open={openAddTeamDialog}
                 onOpenChange={() => setOpenAddTeamDialog(false)}
                 project={project}
+                team={team}
             />
 
             <AlertDialog

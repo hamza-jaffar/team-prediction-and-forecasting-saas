@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import project from '@/routes/project';
-import { BreadcrumbItem, PageProps, PaginationLink } from '@/types';
+import teamRoutes from '@/routes/team';
+import { BreadcrumbItem, PageProps, PaginationLink, Team } from '@/types';
 import { Project } from '@/types/project';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { PlusIcon, Trash2Icon } from 'lucide-react';
@@ -15,10 +16,7 @@ import ProjectPagination from './project-pagination';
 import ProjectTable from './project-table';
 import ProjectTrashModal from './project-trash-modal';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: dashboard().url },
-    { title: 'Project', href: project.index().url },
-];
+// Breadcrumbs moved inside component for dynamic context
 
 interface ProjectIndexProps extends PageProps {
     projects: {
@@ -31,9 +29,26 @@ interface ProjectIndexProps extends PageProps {
         total: number;
     };
     queryParams?: any;
+    team: Team | null;
 }
 
-const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
+const ProjectIndex = ({
+    projects,
+    queryParams = null,
+    team = null,
+}: ProjectIndexProps) => {
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Dashboard',
+            href: team ? teamRoutes.dashboard(team.slug).url : dashboard().url,
+        },
+        {
+            title: 'Project',
+            href: team
+                ? teamRoutes.project.index(team.slug).url
+                : project.index().url,
+        },
+    ];
     const [view, setView] = useState<'table' | 'kanban'>('table');
     const [search, setSearch] = useState(queryParams?.search || '');
     const [sortField, setSortField] = useState(
@@ -67,8 +82,11 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
         }
 
         const handler = setTimeout(() => {
+            const url = team
+                ? teamRoutes.project.index(team.slug).url
+                : project.index().url;
             router.get(
-                project.index().url,
+                url,
                 { ...queryParams, search: search || undefined },
                 {
                     preserveState: true,
@@ -85,8 +103,11 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
     const handleTrashedChange = useCallback(
         (value: string) => {
             setTrashed(value);
+            const url = team
+                ? teamRoutes.project.index(team.slug).url
+                : project.index().url;
             router.get(
-                project.index().url,
+                url,
                 { ...queryParams, trashed: value || undefined },
                 { preserveState: true },
             );
@@ -109,7 +130,10 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
                 }
             });
 
-            router.get(project.index().url, newParams, {
+            const url = team
+                ? teamRoutes.project.index(team.slug).url
+                : project.index().url;
+            router.get(url, newParams, {
                 preserveState: true,
                 replace: true,
                 onStart: () => setIsFiltering(true),
@@ -125,8 +149,11 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
                 sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
             setSortField(field);
             setSortDirection(direction);
+            const url = team
+                ? teamRoutes.project.index(team.slug).url
+                : project.index().url;
             router.get(
-                project.index().url,
+                url,
                 {
                     ...queryParams,
                     sort_field: field,
@@ -139,16 +166,20 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
                 },
             );
         },
-        [sortField, sortDirection, queryParams],
+        [sortField, sortDirection, queryParams, team],
     );
 
     const handleStatusChange = useCallback(
         (slug: string, newStatus: string) => {
-            router.patch(project.update_status(slug).url, {
+            const url = team
+                ? teamRoutes.project.update_status({ team: team.slug, slug })
+                      .url
+                : project.update_status(slug).url;
+            router.patch(url, {
                 status: newStatus,
             });
         },
-        [],
+        [team],
     );
 
     const handleDeleteClick = (proj: Project) => {
@@ -161,8 +192,18 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
 
         const url =
             option === 'permanent'
-                ? project.force_delete(selectedProject.slug).url
-                : project.destroy(selectedProject.slug).url;
+                ? team
+                    ? teamRoutes.project.force_delete({
+                          team: team.slug,
+                          slug: selectedProject.slug,
+                      }).url
+                    : project.force_delete(selectedProject.slug).url
+                : team
+                  ? teamRoutes.project.destroy({
+                        team: team.slug,
+                        slug: selectedProject.slug,
+                    }).url
+                  : project.destroy(selectedProject.slug).url;
 
         deleteProject(url, {
             onSuccess: () => {
@@ -173,8 +214,11 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
     };
 
     const handleRestoreProject = (slug: string) => {
+        const url = team
+            ? teamRoutes.project.restore({ team: team.slug, slug }).url
+            : project.restore(slug).url;
         router.patch(
-            project.restore(slug).url,
+            url,
             {},
             {
                 preserveState: true,
@@ -193,20 +237,24 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
                         description="Manage and track all your projects in one place."
                     />
                     <div className="flex items-center gap-3">
-                        <Button
-                            variant="outline"
-                            className="gap-2"
-                            onClick={() => setTrashModalOpen(true)}
-                        >
-                            <Trash2Icon className="h-4 w-4" />
-                            Trash
-                        </Button>
-                        <Link href={project.create().url}>
-                            <Button className="gap-2">
-                                <PlusIcon className="h-4 w-4" />
-                                New Project
-                            </Button>
-                        </Link>
+                        {!team && (
+                            <>
+                                <Button
+                                    variant="outline"
+                                    className="gap-2"
+                                    onClick={() => setTrashModalOpen(true)}
+                                >
+                                    <Trash2Icon className="h-4 w-4" />
+                                    Trash
+                                </Button>
+                                <Link href={project.create().url}>
+                                    <Button className="gap-2">
+                                        <PlusIcon className="h-4 w-4" />
+                                        New Project
+                                    </Button>
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -234,6 +282,7 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
                             onStatusChange={handleStatusChange}
                             onDeleteClick={handleDeleteClick}
                             isLoading={isFiltering}
+                            team={team}
                         />
                         <ProjectPagination
                             links={projects.links}
@@ -248,6 +297,7 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
                         projects={projects.data}
                         onStatusChange={handleStatusChange}
                         onDeleteClick={handleDeleteClick}
+                        team={team}
                     />
                 )}
 

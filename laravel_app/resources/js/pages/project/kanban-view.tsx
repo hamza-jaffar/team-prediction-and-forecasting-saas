@@ -8,6 +8,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import project from '@/routes/project';
+import { Team } from '@/types';
 import { Project } from '@/types/project';
 import { Link } from '@inertiajs/react';
 import { format } from 'date-fns';
@@ -23,15 +24,19 @@ export interface KanbanViewProps {
     projects: Project[];
     onStatusChange: (slug: string, newStatus: string) => void;
     onDeleteClick: (project: Project) => void;
+    team?: Team | null;
 }
 
 const KanbanView = ({
     projects,
     onStatusChange,
     onDeleteClick,
+    team,
 }: KanbanViewProps) => {
     const [draggedProject, setDraggedProject] = useState<Project | null>(null);
-    const [loadingProjectId, setLoadingProjectId] = useState<number | null>(null);
+    const [loadingProjectId, setLoadingProjectId] = useState<number | null>(
+        null,
+    );
     const [dragOverStatus, setDragOverStatus] = useState<string | null>(null);
     const statuses = ['active', 'completed', 'archived'];
 
@@ -41,10 +46,12 @@ const KanbanView = ({
     }, [projects]);
 
     const handleDragStart = (proj: Project) => {
+        if (team) return; // Disable drag in team context
         setDraggedProject(proj);
     };
 
     const handleDragOver = (e: React.DragEvent, status: string) => {
+        if (team) return; // Disable drop in team context
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
         setDragOverStatus(status);
@@ -73,9 +80,11 @@ const KanbanView = ({
                             ? 'border-blue-500 bg-blue-50/50 ring-2 ring-blue-200'
                             : ''
                     }`}
-                    onDragOver={(e) => handleDragOver(e, status)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={() => handleDrop(status)}
+                    onDragOver={
+                        !team ? (e) => handleDragOver(e, status) : undefined
+                    }
+                    onDragLeave={!team ? handleDragLeave : undefined}
+                    onDrop={!team ? () => handleDrop(status) : undefined}
                 >
                     <div className="mb-4 flex items-center justify-between">
                         <h3 className="font-semibold text-foreground capitalize">
@@ -91,9 +100,15 @@ const KanbanView = ({
                             .map((proj) => (
                                 <Card
                                     key={proj.id}
-                                    draggable
-                                    onDragStart={() => handleDragStart(proj)}
-                                    className={`cursor-move transition-all duration-200 ${
+                                    draggable={!team}
+                                    onDragStart={
+                                        !team
+                                            ? () => handleDragStart(proj)
+                                            : undefined
+                                    }
+                                    className={`transition-all duration-200 ${
+                                        team ? 'cursor-default' : 'cursor-move'
+                                    } ${
                                         draggedProject?.id === proj.id
                                             ? 'scale-105 shadow-2xl ring-2 ring-blue-400'
                                             : loadingProjectId === proj.id
@@ -107,47 +122,56 @@ const KanbanView = ({
                                                 <CardTitle className="text-base font-medium">
                                                     {proj.name}
                                                 </CardTitle>
-                                                {loadingProjectId === proj.id && (
-                                                    <p className="mt-1 text-xs text-muted-foreground animate-pulse">
+                                                {loadingProjectId ===
+                                                    proj.id && (
+                                                    <p className="mt-1 animate-pulse text-xs text-muted-foreground">
                                                         Moving...
                                                     </p>
                                                 )}
                                             </div>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="-mr-2 h-6 w-6"
+                                            {!team && (
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger
+                                                        asChild
                                                     >
-                                                        <MoreHorizontalIcon className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem asChild>
-                                                        <Link
-                                                            href={
-                                                                project.edit(
-                                                                    proj.slug,
-                                                                ).url
-                                                            }
-                                                            className="flex cursor-pointer gap-2"
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="-mr-2 h-6 w-6"
                                                         >
-                                                            <EditIcon className="h-4 w-4" />
-                                                            Edit
-                                                        </Link>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        onClick={() =>
-                                                            onDeleteClick(proj)
-                                                        }
-                                                        className="text-red-600 focus:text-red-600"
-                                                    >
-                                                        <Trash2Icon className="h-4 w-4" />
-                                                        Delete
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                                            <MoreHorizontalIcon className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem
+                                                            asChild
+                                                        >
+                                                            <Link
+                                                                href={
+                                                                    project.edit(
+                                                                        proj.slug,
+                                                                    ).url
+                                                                }
+                                                                className="flex cursor-pointer gap-2"
+                                                            >
+                                                                <EditIcon className="h-4 w-4" />
+                                                                Edit
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            onClick={() =>
+                                                                onDeleteClick(
+                                                                    proj,
+                                                                )
+                                                            }
+                                                            className="text-red-600 focus:text-red-600"
+                                                        >
+                                                            <Trash2Icon className="h-4 w-4" />
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            )}
                                         </div>
                                     </CardHeader>
                                     <CardContent className="p-4 pt-2">
@@ -169,7 +193,10 @@ const KanbanView = ({
                                                         : 'TBD'}
                                                 </span>
                                             </div>
-                                            <span>{proj.owner.first_name} {proj.owner.last_name}</span>
+                                            <span>
+                                                {proj.owner.first_name}{' '}
+                                                {proj.owner.last_name}
+                                            </span>
                                         </div>
                                     </CardContent>
                                 </Card>

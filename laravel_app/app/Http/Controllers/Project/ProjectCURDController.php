@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Log;
 
 class ProjectCURDController extends Controller
 {
-    public function index(\Illuminate\Http\Request $request)
+    public function index(\Illuminate\Http\Request $request, \App\Models\Team $team = null)
     {
-        $projects = ProjectService::getProjects($request);
+        $projects = ProjectService::getProjects($request, $team);
 
         if ($request->wantsJson()) {
             return response()->json($projects);
@@ -21,18 +21,25 @@ class ProjectCURDController extends Controller
         return Inertia::render('project/index', [
             'projects' => $projects,
             'queryParams' => $request->all(['search', 'sort_field', 'sort_direction', 'trashed', 'status', 'start_date', 'end_date']),
+            'team' => $team,
         ]);
     }
 
-    public function create()
+    public function create(\App\Models\Team $team = null)
     {
-        return Inertia::render('project/create');
+        return Inertia::render('project/create', [
+            'team' => $team,
+        ]);
     }
 
-    public function store(CreateEditProjectRequest $request)
+    public function store(CreateEditProjectRequest $request, \App\Models\Team $team = null)
     {
         try {
             ProjectService::create($request->validated());
+
+            if ($team) {
+                return redirect()->route('team.project.index', $team->slug)->with('success', 'Project created successfully.');
+            }
 
             return redirect()->route('project.index')->with('success', 'Project created successfully.');
         } catch (\Exception $e) {
@@ -42,25 +49,59 @@ class ProjectCURDController extends Controller
         }
     }
 
-    public function edit($slug)
+    public function edit($team, $slug = null)
     {
         try {
-            $project = ProjectService::getProjectBySlug($slug);
+            // Handle positional arguments: if $slug is null, $team is actually the $slug
+            if ($slug === null) {
+                $actualSlug = $team;
+                $actualTeam = null;
+            } else {
+                $actualSlug = $slug;
+                $actualTeam = $team instanceof \App\Models\Team ? $team : \App\Models\Team::where('slug', $team)->first();
+            }
+
+            $project = ProjectService::getProjectBySlug($actualSlug);
 
             return Inertia::render('project/edit', [
                 'project' => $project,
+                'team' => $actualTeam,
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to get project: '.$e->getMessage());
+
+            if (isset($actualTeam) && $actualTeam) {
+                return redirect()->route('team.project.index', $actualTeam->slug)->with('error', 'Project not found.');
+            }
 
             return redirect()->route('project.index')->with('error', 'Project not found.');
         }
     }
 
-    public function update($slug, CreateEditProjectRequest $request)
+    public function update(\Illuminate\Http\Request $request, $team, $slug = null)
     {
         try {
-            ProjectService::update($slug, $request->validated());
+            if ($slug === null) {
+                $actualSlug = $team;
+                $actualTeam = null;
+            } else {
+                $actualSlug = $slug;
+                $actualTeam = $team instanceof \App\Models\Team ? $team : \App\Models\Team::where('slug', $team)->first();
+            }
+
+            // CreateEditProjectRequest logic moved here or validated manually if shared
+            $data = $request->validate([
+                'name' => 'required',
+                'description' => 'nullable',
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+            ]);
+
+            ProjectService::update($actualSlug, $data);
+
+            if ($actualTeam) {
+                return redirect()->route('team.project.index', $actualTeam->slug)->with('success', 'Project updated successfully.');
+            }
 
             return redirect()->route('project.index')->with('success', 'Project updated successfully.');
         } catch (\Exception $e) {
@@ -70,10 +111,22 @@ class ProjectCURDController extends Controller
         }
     }
 
-    public function destroy($slug)
+    public function destroy($team, $slug = null)
     {
         try {
-            ProjectService::delete($slug);
+            if ($slug === null) {
+                $actualSlug = $team;
+                $actualTeam = null;
+            } else {
+                $actualSlug = $slug;
+                $actualTeam = $team instanceof \App\Models\Team ? $team : \App\Models\Team::where('slug', $team)->first();
+            }
+
+            ProjectService::delete($actualSlug);
+
+            if ($actualTeam) {
+                return redirect()->route('team.project.index', $actualTeam->slug)->with('success', 'Project moved to trash.');
+            }
 
             return redirect()->route('project.index')->with('success', 'Project moved to trash.');
         } catch (\Exception $e) {
@@ -83,14 +136,20 @@ class ProjectCURDController extends Controller
         }
     }
 
-    public function updateStatus($slug, \Illuminate\Http\Request $request)
+    public function updateStatus(\Illuminate\Http\Request $request, $team, $slug = null)
     {
         try {
+            if ($slug === null) {
+                $actualSlug = $team;
+            } else {
+                $actualSlug = $slug;
+            }
+
             $request->validate([
                 'status' => 'required|in:active,completed,archived',
             ]);
 
-            ProjectService::updateStatus($slug, $request->status);
+            ProjectService::updateStatus($actualSlug, $request->status);
 
             return back()->with('success', 'Project status updated successfully.');
         } catch (\Exception $e) {
@@ -100,10 +159,22 @@ class ProjectCURDController extends Controller
         }
     }
 
-    public function restore($slug)
+    public function restore($team, $slug = null)
     {
         try {
-            ProjectService::restore($slug);
+            if ($slug === null) {
+                $actualSlug = $team;
+                $actualTeam = null;
+            } else {
+                $actualSlug = $slug;
+                $actualTeam = $team instanceof \App\Models\Team ? $team : \App\Models\Team::where('slug', $team)->first();
+            }
+
+            ProjectService::restore($actualSlug);
+
+            if ($actualTeam) {
+                return redirect()->route('team.project.index', $actualTeam->slug)->with('success', 'Project restored successfully.');
+            }
 
             return redirect()->route('project.index')->with('success', 'Project restored successfully.');
         } catch (\Exception $e) {
@@ -113,10 +184,22 @@ class ProjectCURDController extends Controller
         }
     }
 
-    public function forceDelete($slug)
+    public function forceDelete($team, $slug = null)
     {
         try {
-            ProjectService::forceDelete($slug);
+            if ($slug === null) {
+                $actualSlug = $team;
+                $actualTeam = null;
+            } else {
+                $actualSlug = $slug;
+                $actualTeam = $team instanceof \App\Models\Team ? $team : \App\Models\Team::where('slug', $team)->first();
+            }
+
+            ProjectService::forceDelete($actualSlug);
+
+            if ($actualTeam) {
+                return redirect()->route('team.project.index', $actualTeam->slug)->with('success', 'Project permanently deleted.');
+            }
 
             return redirect()->route('project.index')->with('success', 'Project permanently deleted.');
         } catch (\Exception $e) {

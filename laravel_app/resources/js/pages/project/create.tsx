@@ -13,19 +13,33 @@ import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
-import project from '@/routes/project';
-import { BreadcrumbItem } from '@/types';
+import projectRoute from '@/routes/project';
+import teamRoutes from '@/routes/team';
+import { BreadcrumbItem, Team } from '@/types';
 import { Form, Head } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { ChevronDownIcon } from 'lucide-react';
 import { useState } from 'react';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: dashboard().url },
-    { title: 'Project', href: project.create().url },
-];
-
-const ProjectIndex = () => {
+const ProjectCreate = ({ team = null }: { team?: Team | null }) => {
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Dashboard',
+            href: team ? teamRoutes.dashboard(team.slug).url : dashboard().url,
+        },
+        {
+            title: 'Project',
+            href: team
+                ? teamRoutes.project.index(team.slug).url
+                : projectRoute.index().url,
+        },
+        {
+            title: 'Create Project',
+            href: team
+                ? teamRoutes.project.create(team.slug).url
+                : projectRoute.create().url,
+        },
+    ];
     const today = new Date();
     const [startDate, setStartDate] = useState<Date>(today);
     const [endDate, setEndDate] = useState<Date>();
@@ -43,7 +57,11 @@ const ProjectIndex = () => {
 
                     {/* Form */}
                     <Form
-                        action={project.store().url}
+                        action={
+                            team
+                                ? teamRoutes.project.store(team.slug).url
+                                : projectRoute.store().url
+                        }
                         method="POST"
                         className="space-y-8 rounded-xl"
                     >
@@ -211,4 +229,4 @@ const ProjectIndex = () => {
     );
 };
 
-export default ProjectIndex;
+export default ProjectCreate;
