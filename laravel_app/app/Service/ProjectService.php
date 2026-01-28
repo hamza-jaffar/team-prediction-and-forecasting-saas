@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Helpers\SlugHelper;
+use App\Helpers\UtilHelper;
 use App\Models\Project;
 use App\Models\ProjectTeams;
 use Illuminate\Support\Facades\Auth;
@@ -74,9 +75,32 @@ class ProjectService
 
     public static function getProjectBySlug($slug)
     {
-        return Project::withTrashed()->with(['owner', 'teams' => function ($query) {
-            $query->withTrashed();
-        }, 'teams.team.users', 'teams.team.roles'])->where('slug', $slug)->firstOrFail();
+        try {
+            $project = Project::withTrashed()
+                ->with([
+                    'owner',
+                    'teams' => fn ($q) => $q->withTrashed(),
+                    'teams.team.users',
+                ])
+                ->where('slug', $slug)
+                ->firstOrFail();
+
+            // Now you have real data
+            foreach ($project->teams as $teamRelation) {
+                $team = $teamRelation->team;
+
+                foreach ($teamRelation->team->users as $user) {
+                    $user->role = UtilHelper::roleInTeam(
+                        $team,
+                        $user
+                    );
+                }
+            }
+
+            return $project;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
     }
 
     public static function getProjectById($id)

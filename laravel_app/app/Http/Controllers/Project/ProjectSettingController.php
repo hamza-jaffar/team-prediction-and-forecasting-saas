@@ -13,6 +13,7 @@ class ProjectSettingController extends Controller
     public function index(\Illuminate\Http\Request $request, $team, $slug = null)
     {
         try {
+
             if ($slug === null) {
                 $actualSlug = $team;
                 $actualTeam = null;

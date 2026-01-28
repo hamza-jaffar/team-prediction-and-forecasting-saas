@@ -31,8 +31,6 @@ export function AppSidebar() {
     const activeTeam = auth.active_team;
     const teams = auth.user.teams || [];
 
-    console.log(activeTeam);
-
     const personalNavItems: NavItem[] = [
         {
             title: 'Dashboard',

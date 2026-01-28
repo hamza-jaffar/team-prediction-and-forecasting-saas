@@ -42,6 +42,7 @@ export type User = {
     email_verified_at: string | null;
     two_factor_enabled?: boolean;
     teams?: Team[];
+    role?: TeamRole;
     created_at: string;
     updated_at: string;
     pivot?: TeamUserRolePivot;

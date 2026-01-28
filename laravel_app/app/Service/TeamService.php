@@ -24,4 +24,15 @@ class TeamService
             throw new \Exception($e->getMessage());
         }
     }
+
+    public static function getTeamBySlug($slug)
+    {
+        try {
+            dd(Team::where('slug', $slug)->first());
+
+            return Team::where('slug', $slug)->first();
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
 }

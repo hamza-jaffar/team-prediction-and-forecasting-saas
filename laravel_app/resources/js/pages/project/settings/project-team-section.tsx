@@ -244,12 +244,13 @@ const ProjectTeamSection = ({
                                                             variant="secondary"
                                                             className="text-xs"
                                                         >
-                                                            {projectTeam.team?.roles?.find(
+                                                            {/* {projectTeam.team?.roles?.find(
                                                                 (role: any) =>
                                                                     role.id ===
                                                                     member.pivot
                                                                         ?.team_role_id,
-                                                            )?.name || 'Member'}
+                                                            )?.name || 'Member'} */}
+                                                            {member.role?.name}
                                                         </Badge>
                                                     </div>
                                                 ),
