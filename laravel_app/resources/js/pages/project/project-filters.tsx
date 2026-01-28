@@ -26,6 +26,7 @@ interface ProjectFiltersProps {
     onSearchChange: (value: string) => void;
     onFilterChange: (filters: any) => void;
     onViewChange: (view: 'table' | 'kanban') => void;
+    isLoading?: boolean;
 }
 
 const ProjectFilters = ({
@@ -37,6 +38,7 @@ const ProjectFilters = ({
     onSearchChange,
     onFilterChange,
     onViewChange,
+    isLoading,
 }: ProjectFiltersProps) => {
     return (
         <div className="mb-6 flex flex-col gap-4">
@@ -50,6 +52,7 @@ const ProjectFilters = ({
                             className="w-full pl-9"
                             value={search}
                             onChange={(e) => onSearchChange(e.target.value)}
+                            disabled={isLoading}
                         />
                     </div>
                 </div>
@@ -100,6 +103,7 @@ const ProjectFilters = ({
                             onValueChange={(val) =>
                                 onFilterChange({ status: val })
                             }
+                            disabled={isLoading}
                         >
                             <SelectTrigger className="h-9 w-32">
                                 <SelectValue placeholder="Status" />
@@ -133,6 +137,7 @@ const ProjectFilters = ({
                             }
                             className="h-9 w-[180px]"
                             placeholder="Start date"
+                            disabled={isLoading}
                         />
                     </div>
 
@@ -149,6 +154,7 @@ const ProjectFilters = ({
                             }
                             className="h-9 w-[180px]"
                             placeholder="End date"
+                            disabled={isLoading}
                         />
                     </div>
 
@@ -165,6 +171,7 @@ const ProjectFilters = ({
                                     end_date: '',
                                 })
                             }
+                            disabled={isLoading}
                         >
                             Reset
                         </Button>

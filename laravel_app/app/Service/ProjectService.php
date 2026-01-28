@@ -52,8 +52,9 @@ class ProjectService
             }
 
             // Sorting
-            if ($request->has('sort_field') && $request->has('sort_direction')) {
-                $query->orderBy($request->sort_field, $request->sort_direction);
+            if ($request->filled('sort_field')) {
+                $direction = strtolower($request->sort_direction) === 'asc' ? 'asc' : 'desc';
+                $query->orderBy($request->sort_field, $direction);
             } else {
                 $query->orderBy('created_at', 'desc');
             }

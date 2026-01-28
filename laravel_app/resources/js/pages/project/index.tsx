@@ -220,6 +220,7 @@ const ProjectIndex = ({ projects, queryParams = null }: ProjectIndexProps) => {
                     onSearchChange={handleSearch}
                     onFilterChange={handleFilterChange}
                     onViewChange={setView}
+                    isLoading={isFiltering}
                 />
 
                 {/* Table View */}
