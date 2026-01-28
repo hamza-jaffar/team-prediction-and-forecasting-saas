@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Team\TeamController;
 use App\Http\Controllers\Team\TeamCRUDController;
 use App\Http\Controllers\Team\TeamDashboardController;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('members', \App\Http\Controllers\Team\TeamMemberController::class);
         Route::resource('roles', \App\Http\Controllers\Team\TeamRoleController::class);
     });
-
     Route::resource('team', TeamCRUDController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+    Route::get('/my-teams', [TeamController::class, 'myTeams'])->name('my-teams');
 });

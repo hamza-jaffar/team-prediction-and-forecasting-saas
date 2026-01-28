@@ -89,7 +89,7 @@ export function TeamSwitcher({ teams }: { teams: Team[] }) {
                                 onClick={() =>
                                     router.get(team.dashboard(data.slug).url)
                                 }
-                                className="gap-2 p-2"
+                                className="cursor-pointer gap-2 p-2"
                             >
                                 <div className="flex size-6 items-center justify-center rounded-md border">
                                     <GalleryVerticalEnd className="size-3.5 shrink-0" />
@@ -108,7 +108,10 @@ export function TeamSwitcher({ teams }: { teams: Team[] }) {
                             </DropdownMenuItem>
                         ))}
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="gap-2 p-2" asChild>
+                        <DropdownMenuItem
+                            className="cursor-pointer gap-2 p-2"
+                            asChild
+                        >
                             <Link href={team.create().url}>
                                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                                     <Plus className="size-4" />

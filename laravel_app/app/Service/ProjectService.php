@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Helpers\SlugHelper;
 use App\Models\Project;
+use App\Models\ProjectTeams;
 use Illuminate\Support\Facades\Auth;
 
 class ProjectService
@@ -43,7 +44,16 @@ class ProjectService
 
     public static function getProjectBySlug($slug)
     {
-        return Project::with(['owner'])->where('slug', $slug)->firstOrFail();
+        return Project::with(['owner', 'teams.team.users', 'teams.team.roles'])->where('slug', $slug)->firstOrFail();
+    }
+
+    public static function getProjectById($id)
+    {
+        try {
+            return Project::with(['owner'])->where('id', $id)->firstOrFail();
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
     }
 
     public static function update($slug, array $data)
@@ -101,6 +111,31 @@ class ProjectService
             $project->update(['status' => $status]);
 
             return $project;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    public static function addTeam($request, $projectId): ProjectTeams
+    {
+        try {
+            $project_team = ProjectTeams::create([
+                'project_id' => $projectId,
+                'team_id' => $request->team_id,
+                'role' => $request->role,
+                'status' => 'active',
+            ]);
+
+            return $project_team;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    public static function removeTeam($projectId, $teamId): bool
+    {
+        try {
+            return ProjectTeams::where('project_id', $projectId)->where('team_id', $teamId)->delete();
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }

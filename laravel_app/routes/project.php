@@ -15,4 +15,6 @@ Route::prefix('project')->middleware('auth')->name('project.')->group(function (
     Route::delete('/force-delete/{slug}', [ProjectCURDController::class, 'forceDelete'])->name('force_delete');
     Route::patch('/update-status/{slug}', [ProjectCURDController::class, 'updateStatus'])->name('update_status');
     Route::get('/{slug}/settings', [ProjectSettingController::class, 'index'])->name('settings');
+    Route::post('/{project_id}/add-team', [ProjectSettingController::class, 'addTeam'])->name('add_team');
+    Route::delete('/{project_id}/remove-team/{team_id}', [ProjectSettingController::class, 'removeTeam'])->name('remove_team');
 });

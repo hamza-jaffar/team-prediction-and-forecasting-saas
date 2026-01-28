@@ -116,7 +116,7 @@ export default function Members() {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                    <div className="border p-4 shadow-2xl sm:rounded-lg sm:p-8">
+                    <div className="border p-4 shadow-2xl bg-muted/30 sm:rounded-lg sm:p-8">
                         <header>
                             <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                                 Add Team Member
@@ -354,7 +354,7 @@ export default function Members() {
                         </form>
                     </div>
 
-                    <div className="border p-4 shadow sm:rounded-lg sm:p-8">
+                    <div className="border bg-muted/30 p-4 shadow sm:rounded-lg sm:p-8">
                         <header>
                             <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                                 Manage Members

@@ -1,4 +1,5 @@
-import { User } from "./auth";
+import { User } from './auth';
+import { ProjectTeam } from './team';
 
 export interface Project {
     id: number;
@@ -9,6 +10,8 @@ export interface Project {
     end_date: string;
     status: string;
     created_by: number;
-    owner: User
+    owner: User;
+    teams: ProjectTeam[];
+    updated_at: string;
     created_at: string;
 }

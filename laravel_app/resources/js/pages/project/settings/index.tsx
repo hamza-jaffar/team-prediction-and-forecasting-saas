@@ -1,4 +1,3 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,11 +7,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 import { Separator } from '@/components/ui/separator';
 import { UserInfo } from '@/components/user-info';
 import AppLayout from '@/layouts/app-layout';
@@ -22,97 +16,10 @@ import { BreadcrumbItem } from '@/types';
 import { Project } from '@/types/project';
 import { Head, Link } from '@inertiajs/react';
 import { format } from 'date-fns';
-import {
-    CalendarIcon,
-    ChevronDownIcon,
-    EditIcon,
-    PlusCircle,
-    SettingsIcon,
-    UsersIcon,
-} from 'lucide-react';
-import { useState } from 'react';
-
-// Mock data for project teams
-const mockProjectTeams = [
-    {
-        id: 1,
-        name: 'Frontend Team',
-        description: 'Responsible for UI/UX and frontend development',
-        members: [
-            {
-                id: 1,
-                name: 'John Doe',
-                email: 'john@example.com',
-                avatar: 'https://i.pravatar.cc/150?img=1',
-                role: 'Lead Developer',
-            },
-            {
-                id: 2,
-                name: 'Jane Smith',
-                email: 'jane@example.com',
-                avatar: 'https://i.pravatar.cc/150?img=2',
-                role: 'Developer',
-            },
-        ],
-    },
-    {
-        id: 2,
-        name: 'Backend Team',
-        description: 'Handles server-side development and APIs',
-        members: [
-            {
-                id: 3,
-                name: 'Mike Johnson',
-                email: 'mike@example.com',
-                avatar: 'https://i.pravatar.cc/150?img=3',
-                role: 'Lead Developer',
-            },
-            {
-                id: 4,
-                name: 'Sarah Williams',
-                email: 'sarah@example.com',
-                avatar: 'https://i.pravatar.cc/150?img=4',
-                role: 'Developer',
-            },
-        ],
-    },
-    {
-        id: 3,
-        name: 'Design Team',
-        description: 'Creates designs and user experience',
-        members: [
-            {
-                id: 5,
-                name: 'Emma Davis',
-                email: 'emma@example.com',
-                avatar: 'https://i.pravatar.cc/150?img=5',
-                role: 'UI/UX Designer',
-            },
-        ],
-    },
-];
-
-const mockProjectStats = {
-    totalTasks: 47,
-    completedTasks: 31,
-    activeTasks: 12,
-    members: mockProjectTeams.reduce(
-        (sum, team) => sum + team.members.length,
-        0,
-    ),
-};
+import { CalendarIcon, EditIcon, SettingsIcon } from 'lucide-react';
+import ProjectTeamSection from './project-team-section';
 
 const ProjectSetting = ({ project }: { project: Project }) => {
-    const [expandedTeams, setExpandedTeams] = useState<number[]>([]);
-
-    const toggleTeam = (teamId: number) => {
-        setExpandedTeams((prev) =>
-            prev.includes(teamId)
-                ? prev.filter((id) => id !== teamId)
-                : [...prev, teamId],
-        );
-    };
-
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: dashboard().url },
         { title: 'Project', href: projectRoute.index().url },
@@ -121,6 +28,12 @@ const ProjectSetting = ({ project }: { project: Project }) => {
             href: projectRoute.settings(project.slug).url,
         },
     ];
+
+    const membersCount =
+        project.teams?.reduce(
+            (sum, team) => sum + (team.team?.users?.length || 0),
+            0,
+        ) || 0;
 
     const getStatusColor = (status: string) => {
         const colors: Record<string, string> = {
@@ -131,9 +44,11 @@ const ProjectSetting = ({ project }: { project: Project }) => {
         return colors[status] || 'bg-gray-100 text-gray-800';
     };
 
-    const progressPercentage = Math.round(
-        (mockProjectStats.completedTasks / mockProjectStats.totalTasks) * 100,
-    );
+    const totalTasks = 0; // TODO: Implement real task counting
+    const completedTasks = 0;
+    const activeTasks = 0;
+    const progressPercentage =
+        totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -302,8 +217,7 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                                     ></div>
                                 </div>
                                 <p className="mt-2 text-xs text-muted-foreground">
-                                    {mockProjectStats.completedTasks} of{' '}
-                                    {mockProjectStats.totalTasks} tasks
+                                    {completedTasks} of {totalTasks} tasks
                                     completed
                                 </p>
                             </div>
@@ -317,7 +231,7 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                                         Total Tasks
                                     </span>
                                     <span className="font-bold">
-                                        {mockProjectStats.totalTasks}
+                                        {totalTasks}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
@@ -325,7 +239,7 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                                         Active Tasks
                                     </span>
                                     <span className="font-bold text-orange-600">
-                                        {mockProjectStats.activeTasks}
+                                        {activeTasks}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
@@ -333,7 +247,7 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                                         Completed
                                     </span>
                                     <span className="font-bold text-green-600">
-                                        {mockProjectStats.completedTasks}
+                                        {completedTasks}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
@@ -341,7 +255,7 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                                         Team Members
                                     </span>
                                     <span className="font-bold">
-                                        {mockProjectStats.members}
+                                        {membersCount}
                                     </span>
                                 </div>
                             </div>
@@ -349,109 +263,11 @@ const ProjectSetting = ({ project }: { project: Project }) => {
                     </Card>
                 </div>
 
+                <ProjectTeamSection
+                    teams={project.teams || []}
+                    project={project}
+                />
                 {/* Teams Card */}
-                <Card>
-                    <CardHeader className="border-b pb-3">
-                        <div className='flex w-full items-center justify-between'>
-                            <CardTitle className="flex items-center gap-2">
-                                <UsersIcon className="h-5 w-5" />
-                                Project Teams
-                            </CardTitle>
-                            <Button className='cursor-pointer'> <PlusCircle /> Add Team</Button>
-                        </div>
-                        <CardDescription>
-                            Teams assigned to this project (read-only)
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="mt-6">
-                        <div className="space-y-3">
-                            {mockProjectTeams.map((team) => (
-                                <Collapsible
-                                    key={team.id}
-                                    open={expandedTeams.includes(team.id)}
-                                    onOpenChange={() => toggleTeam(team.id)}
-                                >
-                                    <CollapsibleTrigger asChild>
-                                        <button className="flex w-full items-center justify-between rounded-lg border p-4 text-left transition-colors hover:bg-muted/50">
-                                            <div className="flex-1">
-                                                <h3 className="text-base font-semibold text-foreground">
-                                                    {team.name}
-                                                </h3>
-                                                <p className="mt-1 text-sm text-muted-foreground">
-                                                    {team.description}
-                                                </p>
-                                            </div>
-                                            <div className="ml-2 flex items-center gap-2">
-                                                <Badge variant="outline">
-                                                    {team.members.length}
-                                                </Badge>
-                                                <ChevronDownIcon
-                                                    className={`h-5 w-5 text-muted-foreground transition-transform ${
-                                                        expandedTeams.includes(
-                                                            team.id,
-                                                        )
-                                                            ? 'rotate-180'
-                                                            : ''
-                                                    }`}
-                                                />
-                                            </div>
-                                        </button>
-                                    </CollapsibleTrigger>
-
-                                    <CollapsibleContent className="mt-2 rounded-xl border bg-muted/30 px-4 py-3">
-                                        <div className="space-y-3">
-                                            <p className="text-xs font-medium text-muted-foreground">
-                                                {team.members.length} Member
-                                                {team.members.length !== 1
-                                                    ? 's'
-                                                    : ''}
-                                            </p>
-                                            {team.members.map((member) => (
-                                                <div
-                                                    key={member.id}
-                                                    className="flex items-center justify-between border-b border-dashed px-3 py-2"
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        <Avatar className="h-8 w-8">
-                                                            <AvatarImage
-                                                                src={
-                                                                    member.avatar
-                                                                }
-                                                            />
-                                                            <AvatarFallback>
-                                                                {member.name
-                                                                    .split(' ')
-                                                                    .map(
-                                                                        (n) =>
-                                                                            n[0],
-                                                                    )
-                                                                    .join('')}
-                                                            </AvatarFallback>
-                                                        </Avatar>
-                                                        <div>
-                                                            <p className="text-sm font-medium text-foreground">
-                                                                {member.name}
-                                                            </p>
-                                                            <p className="text-xs text-muted-foreground">
-                                                                {member.email}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <Badge
-                                                        variant="secondary"
-                                                        className="text-xs"
-                                                    >
-                                                        {member.role}
-                                                    </Badge>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </CollapsibleContent>
-                                </Collapsible>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
 
                 {/* <div className="grid gap-6 md:grid-cols-2">
                     <Card>

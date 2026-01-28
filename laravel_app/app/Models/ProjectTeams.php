@@ -9,6 +9,8 @@ class ProjectTeams extends Model
 {
     use SoftDeletes;
 
+    protected $table = 'project_teams';
+
     protected $fillable = [
         'project_id',
         'team_id',
@@ -24,10 +26,5 @@ class ProjectTeams extends Model
     public function team()
     {
         return $this->belongsTo(Team::class);
-    }
-
-    public function users()
-    {
-        return $this->team->users();
     }
 }
