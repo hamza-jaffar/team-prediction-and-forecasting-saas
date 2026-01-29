@@ -100,6 +100,13 @@ const ProjectIndex = ({
         return () => clearTimeout(handler);
     }, [search]);
 
+    useEffect(() => {
+        setStatus(queryParams?.status || 'all');
+        setStartDate(queryParams?.start_date || '');
+        setEndDate(queryParams?.end_date || '');
+        setTrashed(queryParams?.trashed || '');
+    }, [queryParams]);
+
     const handleTrashedChange = useCallback(
         (value: string) => {
             setTrashed(value);
@@ -171,10 +178,7 @@ const ProjectIndex = ({
 
     const handleStatusChange = useCallback(
         (slug: string, newStatus: string) => {
-            const url = team
-                ? teamRoutes.project.update_status({ team: team.slug, slug })
-                      .url
-                : project.update_status(slug).url;
+            const url = project.update_status(slug).url;
             router.patch(url, {
                 status: newStatus,
             });
@@ -192,18 +196,8 @@ const ProjectIndex = ({
 
         const url =
             option === 'permanent'
-                ? team
-                    ? teamRoutes.project.force_delete({
-                          team: team.slug,
-                          slug: selectedProject.slug,
-                      }).url
-                    : project.force_delete(selectedProject.slug).url
-                : team
-                  ? teamRoutes.project.destroy({
-                        team: team.slug,
-                        slug: selectedProject.slug,
-                    }).url
-                  : project.destroy(selectedProject.slug).url;
+                ? project.force_delete(selectedProject.slug).url
+                : project.destroy(selectedProject.slug).url;
 
         deleteProject(url, {
             onSuccess: () => {
@@ -214,9 +208,7 @@ const ProjectIndex = ({
     };
 
     const handleRestoreProject = (slug: string) => {
-        const url = team
-            ? teamRoutes.project.restore({ team: team.slug, slug }).url
-            : project.restore(slug).url;
+        const url = project.restore(slug).url;
         router.patch(
             url,
             {},

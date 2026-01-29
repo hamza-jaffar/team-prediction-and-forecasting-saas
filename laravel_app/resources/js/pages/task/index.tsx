@@ -58,6 +58,8 @@ const TaskIndex = ({
     const [trashModalOpen, setTrashModalOpen] = useState(false);
     const [status, setStatus] = useState(queryParams?.status || 'all');
     const [priority, setPriority] = useState(queryParams?.priority || 'all');
+    const [startDate, setStartDate] = useState(queryParams?.start_date || '');
+    const [dueDate, setDueDate] = useState(queryParams?.due_date || '');
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const [isFiltering, setIsFiltering] = useState(false);
     const { delete: deleteTask, processing: isDeleting } = useForm();
@@ -92,6 +94,13 @@ const TaskIndex = ({
 
         return () => clearTimeout(handler);
     }, [search]);
+
+    useEffect(() => {
+        setStatus(queryParams?.status || 'all');
+        setPriority(queryParams?.priority || 'all');
+        setStartDate(queryParams?.start_date || '');
+        setDueDate(queryParams?.due_date || '');
+    }, [queryParams]);
 
     const handleFilterChange = useCallback(
         (filters: any) => {
@@ -145,6 +154,48 @@ const TaskIndex = ({
             );
         },
         [sortField, sortDirection, queryParams, team],
+    );
+
+    const handleStatusChange = useCallback(
+        (slug: string, newStatus: string) => {
+            const url = team
+                ? // @ts-ignore
+                  teamRoutes.task.update(team.slug, slug).url
+                : taskRoute.update(slug).url;
+
+            router.put(
+                url,
+                {
+                    status: newStatus,
+                },
+                {
+                    preserveScroll: true,
+                    preserveState: true,
+                },
+            );
+        },
+        [team],
+    );
+
+    const handlePriorityChange = useCallback(
+        (slug: string, newPriority: string) => {
+            const url = team
+                ? // @ts-ignore
+                  teamRoutes.task.update(team.slug, slug).url
+                : taskRoute.update(slug).url;
+
+            router.patch(
+                url,
+                {
+                    priority: newPriority,
+                },
+                {
+                    preserveScroll: true,
+                    preserveState: true,
+                },
+            );
+        },
+        [team],
     );
 
     const handleDeleteClick = (task: Task) => {
@@ -217,6 +268,8 @@ const TaskIndex = ({
                     search={search}
                     status={status}
                     priority={priority}
+                    startDate={startDate}
+                    dueDate={dueDate}
                     onSearchChange={handleSearch}
                     onFilterChange={handleFilterChange}
                     isLoading={isFiltering}
@@ -228,6 +281,8 @@ const TaskIndex = ({
                     sortField={sortField}
                     sortDirection={sortDirection}
                     onSort={handleSort}
+                    onStatusChange={handleStatusChange}
+                    onPriorityChange={handlePriorityChange}
                     onDeleteClick={handleDeleteClick}
                     isLoading={isFiltering}
                     team={team}

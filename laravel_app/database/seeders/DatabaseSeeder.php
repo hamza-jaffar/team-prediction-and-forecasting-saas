@@ -18,10 +18,10 @@ class DatabaseSeeder extends Seeder
         $this->call(TeamManagementSeeder::class);
 
         User::factory()->create([
-            'first_name' => 'Test',
-            'last_name' => 'User',
-            'username' => 'testuser',
-            'email' => 'test@example.com',
+            'first_name' => 'Hamza',
+            'last_name' => 'Jaffar',
+            'username' => 'hamzajaffar',
+            'email' => 'hamzajaffer789@gmail.com',
         ]);
     }
 }

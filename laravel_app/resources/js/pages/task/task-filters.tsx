@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -7,13 +8,22 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Loader2Icon, SearchIcon, XIcon } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import {
+    FilterIcon,
+    FlagIcon,
+    Loader2Icon,
+    SearchIcon,
+    XIcon,
+} from 'lucide-react';
 import { useCallback } from 'react';
 
 interface TaskFiltersProps {
     search: string;
     status: string;
     priority: string;
+    startDate: string;
+    dueDate: string;
     projectId?: string;
     onSearchChange: (value: string) => void;
     onFilterChange: (filters: any) => void;
@@ -24,6 +34,8 @@ const TaskFilters = ({
     search,
     status,
     priority,
+    startDate,
+    dueDate,
     projectId,
     onSearchChange,
     onFilterChange,
@@ -34,12 +46,19 @@ const TaskFilters = ({
         onFilterChange({
             status: 'all',
             priority: 'all',
+            start_date: '',
+            due_date: '',
             project_id: undefined,
         });
     }, [onSearchChange, onFilterChange]);
 
     const hasActiveFilters =
-        search || status !== 'all' || priority !== 'all' || projectId;
+        search ||
+        status !== 'all' ||
+        priority !== 'all' ||
+        startDate ||
+        dueDate ||
+        projectId;
 
     return (
         <div className="mb-6 space-y-4">
@@ -52,6 +71,7 @@ const TaskFilters = ({
                     value={search}
                     onChange={(e) => onSearchChange(e.target.value)}
                     className="pr-10 pl-10"
+                    disabled={isLoading}
                 />
                 {isLoading && (
                     <Loader2Icon className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
@@ -59,17 +79,23 @@ const TaskFilters = ({
             </div>
 
             {/* Filter Controls */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/20 p-3">
+                <div className="mr-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <FilterIcon className="h-4 w-4" />
+                    Filters:
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
                     {/* Status Filter */}
                     <Select
                         value={status}
                         onValueChange={(value) =>
                             onFilterChange({ status: value })
                         }
+                        disabled={isLoading}
                     >
-                        <SelectTrigger className="w-full sm:w-[180px]">
-                            <SelectValue placeholder="Filter by status" />
+                        <SelectTrigger className="w-[140px]">
+                            <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Statuses</SelectItem>
@@ -106,50 +132,84 @@ const TaskFilters = ({
                         onValueChange={(value) =>
                             onFilterChange({ priority: value })
                         }
+                        disabled={isLoading}
                     >
-                        <SelectTrigger className="w-full sm:w-[180px]">
-                            <SelectValue placeholder="Filter by priority" />
+                        <SelectTrigger className="w-[140px]">
+                            <SelectValue placeholder="Priority" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Priorities</SelectItem>
                             <SelectItem value="low">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-gray-500">🏳️</span>
+                                    <FlagIcon className="h-3 w-3 text-gray-400" />
                                     Low
                                 </div>
                             </SelectItem>
                             <SelectItem value="medium">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-yellow-500">🚩</span>
+                                    <FlagIcon className="h-3 w-3 text-blue-500" />
                                     Medium
                                 </div>
                             </SelectItem>
                             <SelectItem value="high">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-orange-500">🚩</span>
+                                    <FlagIcon className="h-3 w-3 text-orange-500" />
                                     High
                                 </div>
                             </SelectItem>
                             <SelectItem value="critical">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-red-500">🚩</span>
+                                    <FlagIcon className="h-3 w-3 text-red-500" />
                                     Critical
                                 </div>
                             </SelectItem>
                         </SelectContent>
                     </Select>
+
+                    {/* Start Date Filter */}
+                    <div className="flex items-center gap-2">
+                        <DatePicker
+                            date={startDate ? parseISO(startDate) : undefined}
+                            setDate={(d) =>
+                                onFilterChange({
+                                    start_date: d
+                                        ? format(d, 'yyyy-MM-dd')
+                                        : '',
+                                })
+                            }
+                            className="h-9 w-[140px]"
+                            placeholder="Start date"
+                            disabled={isLoading}
+                        />
+                    </div>
+
+                    {/* Due Date Filter */}
+                    <div className="flex items-center gap-2">
+                        <DatePicker
+                            date={dueDate ? parseISO(dueDate) : undefined}
+                            setDate={(d) =>
+                                onFilterChange({
+                                    due_date: d ? format(d, 'yyyy-MM-dd') : '',
+                                })
+                            }
+                            className="h-9 w-[140px]"
+                            placeholder="Due date"
+                            disabled={isLoading}
+                        />
+                    </div>
                 </div>
 
                 {/* Clear Filters Button */}
                 {hasActiveFilters && (
                     <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={handleClearFilters}
-                        className="gap-2"
+                        className="ml-auto h-9 gap-2 px-2 text-muted-foreground hover:text-foreground md:ml-0"
+                        disabled={isLoading}
                     >
                         <XIcon className="h-4 w-4" />
-                        Clear Filters
+                        Clear
                     </Button>
                 )}
             </div>

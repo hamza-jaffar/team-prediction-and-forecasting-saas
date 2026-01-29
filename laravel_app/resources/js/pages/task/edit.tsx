@@ -76,6 +76,9 @@ const TaskEdit = ({ task, projects, team = null }: TaskEditProps) => {
         task.due_date ? new Date(task.due_date) : undefined,
     );
 
+    const [isStartDateOpen, setIsStartDateOpen] = useState(false);
+    const [isDueDateOpen, setIsDueDateOpen] = useState(false);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <section className="py-10">
@@ -247,7 +250,7 @@ const TaskEdit = ({ task, projects, team = null }: TaskEditProps) => {
                                                 </SelectItem>
                                                 <SelectItem value="medium">
                                                     <div className="flex items-center gap-2">
-                                                        <FlagIcon className="h-4 w-4 text-yellow-500" />
+                                                        <FlagIcon className="h-4 w-4 text-blue-500" />
                                                         Medium
                                                     </div>
                                                 </SelectItem>
@@ -276,7 +279,10 @@ const TaskEdit = ({ task, projects, team = null }: TaskEditProps) => {
                                         <Label htmlFor="start_date">
                                             Start Date
                                         </Label>
-                                        <Popover>
+                                        <Popover
+                                            open={isStartDateOpen}
+                                            onOpenChange={setIsStartDateOpen}
+                                        >
                                             <PopoverTrigger asChild>
                                                 <Button
                                                     variant="outline"
@@ -295,7 +301,12 @@ const TaskEdit = ({ task, projects, team = null }: TaskEditProps) => {
                                                 <Calendar
                                                     mode="single"
                                                     selected={startDate}
-                                                    onSelect={setStartDate}
+                                                    onSelect={(date) => {
+                                                        setStartDate(date);
+                                                        setIsStartDateOpen(
+                                                            false,
+                                                        );
+                                                    }}
                                                     initialFocus
                                                 />
                                             </PopoverContent>
@@ -322,7 +333,10 @@ const TaskEdit = ({ task, projects, team = null }: TaskEditProps) => {
                                         <Label htmlFor="due_date">
                                             Due Date
                                         </Label>
-                                        <Popover>
+                                        <Popover
+                                            open={isDueDateOpen}
+                                            onOpenChange={setIsDueDateOpen}
+                                        >
                                             <PopoverTrigger asChild>
                                                 <Button
                                                     variant="outline"
@@ -338,7 +352,10 @@ const TaskEdit = ({ task, projects, team = null }: TaskEditProps) => {
                                                 <Calendar
                                                     mode="single"
                                                     selected={dueDate}
-                                                    onSelect={setDueDate}
+                                                    onSelect={(date) => {
+                                                        setDueDate(date);
+                                                        setIsDueDateOpen(false);
+                                                    }}
                                                     initialFocus
                                                     disabled={(date) =>
                                                         startDate

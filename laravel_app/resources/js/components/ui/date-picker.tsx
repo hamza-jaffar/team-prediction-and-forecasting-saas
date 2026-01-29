@@ -17,6 +17,7 @@ interface DatePickerProps {
     setDate: (date?: Date) => void
     placeholder?: string
     className?: string
+    disabled?: boolean
 }
 
 export function DatePicker({
@@ -24,6 +25,7 @@ export function DatePicker({
     setDate,
     placeholder = 'Pick a date',
     className,
+    disabled = false,
 }: DatePickerProps) {
     const [open, setOpen] = React.useState(false);
 
@@ -32,6 +34,7 @@ export function DatePicker({
             <PopoverTrigger asChild>
                 <Button
                     variant={'outline'}
+                    disabled={disabled}
                     className={cn(
                         'h-9 w-full justify-start text-left font-normal',
                         !date && 'text-muted-foreground',

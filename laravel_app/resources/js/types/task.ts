@@ -1,3 +1,4 @@
+import { LucideIcon } from 'lucide-react';
 import { Team, User } from './auth';
 import { Project } from './project';
 
@@ -28,4 +29,11 @@ export interface Task {
     team?: Team;
     creator?: User;
     assignedUsers?: User[];
+}
+
+export interface TaskPriorityConfig {
+    label: string;
+    variant: 'secondary' | 'default' | 'destructive' | 'outline';
+    icon: LucideIcon;
+    iconColor: string;
 }

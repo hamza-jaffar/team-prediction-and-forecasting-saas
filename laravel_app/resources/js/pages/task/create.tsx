@@ -63,6 +63,9 @@ const CreateTask = ({ team = null, projects = [] }: CreateTaskProps) => {
     const [startDate, setStartDate] = useState<Date>();
     const [dueDate, setDueDate] = useState<Date>();
 
+    const [isStartDateOpen, setIsStartDateOpen] = useState(false);
+    const [isDueDateOpen, setIsDueDateOpen] = useState(false);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Create Task" />
@@ -252,7 +255,7 @@ const CreateTask = ({ team = null, projects = [] }: CreateTaskProps) => {
                                                 </SelectItem>
                                                 <SelectItem value="medium">
                                                     <span className="flex items-center gap-2">
-                                                        <FlagIcon className="h-3 w-3 text-yellow-500" />
+                                                        <FlagIcon className="h-3 w-3 text-blue-500" />
                                                         Medium
                                                     </span>
                                                 </SelectItem>
@@ -288,7 +291,10 @@ const CreateTask = ({ team = null, projects = [] }: CreateTaskProps) => {
                                             <CalendarIcon className="h-4 w-4 text-green-500" />
                                             Start Date
                                         </Label>
-                                        <Popover>
+                                        <Popover
+                                            open={isStartDateOpen}
+                                            onOpenChange={setIsStartDateOpen}
+                                        >
                                             <PopoverTrigger asChild>
                                                 <Button
                                                     variant="outline"
@@ -312,7 +318,12 @@ const CreateTask = ({ team = null, projects = [] }: CreateTaskProps) => {
                                                 <Calendar
                                                     mode="single"
                                                     selected={startDate}
-                                                    onSelect={setStartDate}
+                                                    onSelect={(date) => {
+                                                        setStartDate(date);
+                                                        setIsStartDateOpen(
+                                                            false,
+                                                        );
+                                                    }}
                                                     defaultMonth={startDate}
                                                 />
                                             </PopoverContent>
@@ -334,7 +345,10 @@ const CreateTask = ({ team = null, projects = [] }: CreateTaskProps) => {
                                             <CalendarIcon className="h-4 w-4 text-red-500" />
                                             Due Date
                                         </Label>
-                                        <Popover>
+                                        <Popover
+                                            open={isDueDateOpen}
+                                            onOpenChange={setIsDueDateOpen}
+                                        >
                                             <PopoverTrigger asChild>
                                                 <Button
                                                     variant="outline"
@@ -358,7 +372,10 @@ const CreateTask = ({ team = null, projects = [] }: CreateTaskProps) => {
                                                 <Calendar
                                                     mode="single"
                                                     selected={dueDate}
-                                                    onSelect={setDueDate}
+                                                    onSelect={(date) => {
+                                                        setDueDate(date);
+                                                        setIsDueDateOpen(false);
+                                                    }}
                                                     defaultMonth={dueDate}
                                                     disabled={(date) =>
                                                         startDate

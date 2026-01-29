@@ -33,9 +33,9 @@
 
     <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
-    <link rel="icon" href="/degvora_logo.jpg" sizes="any">
-    <link rel="icon" href="/degvora_logo.jpg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/degvora_logo.jpg">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/favicon.ico" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/favicon.ico">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
