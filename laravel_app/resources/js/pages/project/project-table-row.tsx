@@ -137,7 +137,7 @@ const ProjectTableRow = ({
                 </div>
             </td>
             <td className="flex gap-2 p-4">
-                <UserInfo user={proj.owner} showEmail />
+                <UserInfo user={proj.owner} showEmail isInTable />
             </td>
             <td className="p-4 text-muted-foreground">
                 {format(new Date(proj.created_at), 'MMM d, yyyy')}

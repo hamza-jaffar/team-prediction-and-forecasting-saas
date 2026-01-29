@@ -17,17 +17,15 @@ import {
     SidebarMenuSubButton,
     SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
+import { getPath, resolveHref } from '@/lib/utils';
 import { NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-
-const resolveHref = (href: NavItem['href']) =>
-    typeof href === 'string' ? href : href.url;
 
 const DropdownLink = ({ item }: { item: NavItem }) => {
     const { url } = usePage();
 
     const isActive = item.items?.some(
-        (subItem) => resolveHref(subItem.href) === url,
+        (subItem) => getPath(resolveHref(subItem.href)) === getPath(url),
     );
 
     return (
@@ -52,7 +50,9 @@ const DropdownLink = ({ item }: { item: NavItem }) => {
                                 <SidebarMenuSubItem key={subItem.title}>
                                     <SidebarMenuSubButton
                                         isActive={
-                                            resolveHref(subItem.href) === url
+                                            getPath(
+                                                resolveHref(subItem.href),
+                                            ) === getPath(url)
                                         }
                                         asChild
                                     >
@@ -77,7 +77,7 @@ const SingleLink = ({ item }: { item: NavItem }) => {
     return (
         <SidebarMenuItem>
             <SidebarMenuSubButton
-                isActive={resolveHref(item.href) === url}
+                isActive={getPath(resolveHref(item.href)) === getPath(url)}
                 asChild
             >
                 <Link href={item.href}>

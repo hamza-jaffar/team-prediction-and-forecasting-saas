@@ -102,24 +102,15 @@ export function AppSidebar() {
         },
         {
             title: 'Tasks',
-            href: '#',
+            href: activeTeam ? team.task.index(activeTeam.slug).url : '#',
             icon: ClipboardCheck,
             show: true,
-            items: [
-                {
-                    title: 'Team Tasks',
-                    href: activeTeam
-                        ? team.task.index(activeTeam.slug).url
-                        : '#',
-                    show: true,
-                },
-            ],
         },
         {
             title: 'Team Settings',
             href: '#',
             icon: UserCog,
-            show: true,
+            show: activeTeam ? activeTeam?.user_id === auth.user.id : false,
             items: [
                 {
                     title: 'Members',

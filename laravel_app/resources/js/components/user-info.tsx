@@ -5,9 +5,11 @@ import type { User } from '@/types';
 export function UserInfo({
     user,
     showEmail = false,
+    isInTable = false,
 }: {
     user: User;
     showEmail?: boolean;
+    isInTable?: boolean;
 }) {
     const getInitials = useInitials();
     const name = user.first_name + ' ' + user.last_name;
@@ -20,9 +22,16 @@ export function UserInfo({
                     {getInitials(name)}
                 </AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{name}</span>
-                {showEmail && (
+            <div
+                className={`flex-1 text-left leading-tight ${
+                    isInTable
+                        ? 'hidden md:flex md:flex-col'
+                        : 'flex flex-col gap-0.5'
+                }`}
+            >
+                <span className="truncate text-sm font-medium">{name}</span>
+
+                {showEmail && user?.email && (
                     <span className="truncate text-xs text-muted-foreground">
                         {user.email}
                     </span>
