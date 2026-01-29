@@ -77,9 +77,9 @@ const GanttView = ({ tasks, isLoading = false }: GanttViewProps) => {
     if (ganttTasks.length === 0) {
         return (
             <div className="flex h-64 w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed bg-muted/5 text-muted-foreground transition-all hover:bg-muted/10">
-                <p className="font-medium">No tasks with dates found.</p>
+                <p className="font-medium">No tasks found.</p>
                 <p className="text-sm">
-                    Add start and due dates to display tasks in the timeline.
+                    Try adjusting your filters or create a new task.
                 </p>
             </div>
         );
