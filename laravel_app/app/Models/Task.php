@@ -38,12 +38,6 @@ class Task extends Model
 
     public function project()
     {
-        // Assuming Project model exists, otherwise this might need adjustment later
-        // return $this->belongsTo(Project::class);
-        // For now user didn't request Project model check, so I'll leave commented or generic
-        // But migration has project_id. I will assume Project model exists or will be created.
-        // Let's check if Project model exists first? No, let's stick to what's requested.
-        // I will implement safe relationships.
         return $this->belongsTo(Project::class);
     }
 
@@ -88,8 +82,6 @@ class Task extends Model
 
     /**
      * Get the route key name for Laravel route model binding
-     *
-     * @return string
      */
     public function getRouteKeyName(): string
     {

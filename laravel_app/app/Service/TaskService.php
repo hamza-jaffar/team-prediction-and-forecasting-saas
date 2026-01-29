@@ -52,7 +52,12 @@ class TaskService
             if ($team && $team->exists) {
                 $query->where('team_id', $team->id);
             } else {
-                $query->where('created_by', Auth::id());
+                $query->where(function ($q) {
+                    $q->where('created_by', Auth::id())
+                      ->orWhereHas('assignedUsers', function ($subQ) {
+                          $subQ->where('user_id', Auth::id());
+                      });
+                });
             }
 
             // Handle Trash
