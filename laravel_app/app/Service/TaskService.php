@@ -81,12 +81,20 @@ class TaskService
             }
 
             // Date Filters
-            if ($request->filled('start_date')) {
-                $query->where('start_date', '>=', $request->start_date);
+            // Start Date Range
+            if ($request->filled('start_date_from')) {
+                $query->whereDate('start_date', '>=', $request->start_date_from);
+            }
+            if ($request->filled('start_date_to')) {
+                $query->whereDate('start_date', '<=', $request->start_date_to);
             }
 
-            if ($request->filled('due_date')) {
-                $query->where('due_date', '<=', $request->due_date);
+            // Due Date Range
+            if ($request->filled('due_date_from')) {
+                $query->whereDate('due_date', '>=', $request->due_date_from);
+            }
+            if ($request->filled('due_date_to')) {
+                $query->whereDate('due_date', '<=', $request->due_date_to);
             }
 
             // Search

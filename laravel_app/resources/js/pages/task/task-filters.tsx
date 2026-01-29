@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { DatePicker } from '@/components/ui/date-picker';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -8,22 +8,19 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { TASK_PRIORITIES, TASK_STATUSES } from '@/constants/task';
 import { format, parseISO } from 'date-fns';
-import {
-    FilterIcon,
-    FlagIcon,
-    Loader2Icon,
-    SearchIcon,
-    XIcon,
-} from 'lucide-react';
+import { FilterIcon, Loader2Icon, SearchIcon, XIcon } from 'lucide-react';
 import { useCallback } from 'react';
 
 interface TaskFiltersProps {
     search: string;
     status: string;
     priority: string;
-    startDate: string;
-    dueDate: string;
+    startDateFrom: string;
+    startDateTo: string;
+    dueDateFrom: string;
+    dueDateTo: string;
     projectId?: string;
     onSearchChange: (value: string) => void;
     onFilterChange: (filters: any) => void;
@@ -34,9 +31,10 @@ const TaskFilters = ({
     search,
     status,
     priority,
-    startDate,
-    dueDate,
-    projectId,
+    startDateFrom,
+    startDateTo,
+    dueDateFrom,
+    dueDateTo,
     onSearchChange,
     onFilterChange,
     isLoading = false,
@@ -46,8 +44,10 @@ const TaskFilters = ({
         onFilterChange({
             status: 'all',
             priority: 'all',
-            start_date: '',
-            due_date: '',
+            start_date_from: '',
+            start_date_to: '',
+            due_date_from: '',
+            due_date_to: '',
             project_id: undefined,
         });
     }, [onSearchChange, onFilterChange]);
@@ -56,9 +56,10 @@ const TaskFilters = ({
         search ||
         status !== 'all' ||
         priority !== 'all' ||
-        startDate ||
-        dueDate ||
-        projectId;
+        startDateFrom ||
+        startDateTo ||
+        dueDateFrom ||
+        dueDateTo;
 
     return (
         <div className="mb-6 space-y-4">
@@ -79,7 +80,7 @@ const TaskFilters = ({
             </div>
 
             {/* Filter Controls */}
-            <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/20 p-3">
+            <div className="flex w-full flex-wrap items-center gap-3 rounded-lg border bg-muted/20 p-3">
                 <div className="mr-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
                     <FilterIcon className="h-4 w-4" />
                     Filters:
@@ -99,30 +100,19 @@ const TaskFilters = ({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Statuses</SelectItem>
-                            <SelectItem value="todo">
-                                <div className="flex items-center gap-2">
-                                    <div className="h-2 w-2 rounded-full bg-gray-500" />
-                                    To Do
-                                </div>
-                            </SelectItem>
-                            <SelectItem value="in_progress">
-                                <div className="flex items-center gap-2">
-                                    <div className="h-2 w-2 rounded-full bg-blue-500" />
-                                    In Progress
-                                </div>
-                            </SelectItem>
-                            <SelectItem value="blocked">
-                                <div className="flex items-center gap-2">
-                                    <div className="h-2 w-2 rounded-full bg-red-500" />
-                                    Blocked
-                                </div>
-                            </SelectItem>
-                            <SelectItem value="done">
-                                <div className="flex items-center gap-2">
-                                    <div className="h-2 w-2 rounded-full bg-green-500" />
-                                    Done
-                                </div>
-                            </SelectItem>
+                            {Object.values(TASK_STATUSES).map((config) => (
+                                <SelectItem
+                                    key={config.value}
+                                    value={config.value}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <div
+                                            className={`h-2 w-2 rounded-full ${config.color}`}
+                                        />
+                                        {config.label}
+                                    </div>
+                                </SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
 
@@ -139,64 +129,76 @@ const TaskFilters = ({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Priorities</SelectItem>
-                            <SelectItem value="low">
-                                <div className="flex items-center gap-2">
-                                    <FlagIcon className="h-3 w-3 text-gray-400" />
-                                    Low
-                                </div>
-                            </SelectItem>
-                            <SelectItem value="medium">
-                                <div className="flex items-center gap-2">
-                                    <FlagIcon className="h-3 w-3 text-blue-500" />
-                                    Medium
-                                </div>
-                            </SelectItem>
-                            <SelectItem value="high">
-                                <div className="flex items-center gap-2">
-                                    <FlagIcon className="h-3 w-3 text-orange-500" />
-                                    High
-                                </div>
-                            </SelectItem>
-                            <SelectItem value="critical">
-                                <div className="flex items-center gap-2">
-                                    <FlagIcon className="h-3 w-3 text-red-500" />
-                                    Critical
-                                </div>
-                            </SelectItem>
+                            {Object.values(TASK_PRIORITIES).map((config) => (
+                                <SelectItem
+                                    key={config.value}
+                                    value={config.value}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <config.icon
+                                            className={`h-3 w-3 ${config.iconColor}`}
+                                        />
+                                        {config.label}
+                                    </div>
+                                </SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
 
-                    {/* Start Date Filter */}
-                    <div className="flex items-center gap-2">
-                        <DatePicker
-                            date={startDate ? parseISO(startDate) : undefined}
-                            setDate={(d) =>
-                                onFilterChange({
-                                    start_date: d
-                                        ? format(d, 'yyyy-MM-dd')
-                                        : '',
-                                })
-                            }
-                            className="h-9 w-[140px]"
-                            placeholder="Start date"
-                            disabled={isLoading}
-                        />
-                    </div>
-
-                    {/* Due Date Filter */}
-                    <div className="flex items-center gap-2">
-                        <DatePicker
-                            date={dueDate ? parseISO(dueDate) : undefined}
-                            setDate={(d) =>
-                                onFilterChange({
-                                    due_date: d ? format(d, 'yyyy-MM-dd') : '',
-                                })
-                            }
-                            className="h-9 w-[140px]"
-                            placeholder="Due date"
-                            disabled={isLoading}
-                        />
-                    </div>
+                    <DateRangePicker
+                        date={
+                            startDateFrom
+                                ? {
+                                      from: startDateFrom
+                                          ? parseISO(startDateFrom)
+                                          : undefined,
+                                      to: startDateTo
+                                          ? parseISO(startDateTo)
+                                          : undefined,
+                                  }
+                                : undefined
+                        }
+                        setDate={(range) => {
+                            onFilterChange({
+                                start_date_from: range?.from
+                                    ? format(range.from, 'yyyy-MM-dd')
+                                    : '',
+                                start_date_to: range?.to
+                                    ? format(range.to, 'yyyy-MM-dd')
+                                    : '',
+                            });
+                        }}
+                        placeholder="Start Date"
+                        disabled={isLoading}
+                        className="w-[200px]"
+                    />
+                    <DateRangePicker
+                        date={
+                            dueDateFrom
+                                ? {
+                                      from: dueDateFrom
+                                          ? parseISO(dueDateFrom)
+                                          : undefined,
+                                      to: dueDateTo
+                                          ? parseISO(dueDateTo)
+                                          : undefined,
+                                  }
+                                : undefined
+                        }
+                        setDate={(range) => {
+                            onFilterChange({
+                                due_date_from: range?.from
+                                    ? format(range.from, 'yyyy-MM-dd')
+                                    : '',
+                                due_date_to: range?.to
+                                    ? format(range.to, 'yyyy-MM-dd')
+                                    : '',
+                            });
+                        }}
+                        placeholder="Due Date"
+                        disabled={isLoading}
+                        className="w-[200px]"
+                    />
                 </div>
 
                 {/* Clear Filters Button */}

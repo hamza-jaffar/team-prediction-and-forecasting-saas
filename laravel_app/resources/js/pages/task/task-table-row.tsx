@@ -8,13 +8,19 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Spinner } from '@/components/ui/spinner';
 import { TableCell, TableRow } from '@/components/ui/table';
+import {
+    TASK_PRIORITIES,
+    TASK_STATUSES,
+    TaskPriority,
+    TaskStatus,
+} from '@/constants/task';
 import taskRoute from '@/routes/task';
 import teamRoutes from '@/routes/team';
 import { Team } from '@/types';
-import { Task, TaskPriorityConfig } from '@/types/task';
+import { Task } from '@/types/task';
 import { Link } from '@inertiajs/react';
 import { format } from 'date-fns';
-import { EditIcon, EyeIcon, FlagIcon, Trash2Icon } from 'lucide-react';
+import { EditIcon, EyeIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 
 interface TaskTableRowProps {
@@ -24,52 +30,6 @@ interface TaskTableRowProps {
     onDeleteClick: (task: Task) => void;
     team?: Team | null;
 }
-
-const statusConfig = {
-    todo: {
-        label: 'To Do',
-        variant: 'secondary' as const,
-        color: 'bg-gray-500',
-    },
-    in_progress: {
-        label: 'In Progress',
-        variant: 'default' as const,
-        color: 'bg-blue-500',
-    },
-    blocked: {
-        label: 'Blocked',
-        variant: 'destructive' as const,
-        color: 'bg-red-500',
-    },
-    done: { label: 'Done', variant: 'outline' as const, color: 'bg-green-500' },
-};
-
-const priorityConfig: Record<string, TaskPriorityConfig> = {
-    low: {
-        label: 'Low',
-        variant: 'secondary' as const,
-        icon: FlagIcon,
-        iconColor: 'text-gray-500',
-    },
-    medium: {
-        label: 'Medium',
-        variant: 'default' as const,
-        icon: FlagIcon,
-        iconColor: 'text-blue-500',
-    },
-    high: {
-        label: 'High',
-        variant: 'secondary' as const,
-        icon: FlagIcon,
-        iconColor: 'text-yellow-500',
-    },
-    critical: {
-        label: 'Critical',
-        variant: 'destructive' as const,
-        icon: FlagIcon,
-        iconColor: 'text-red-500',
-    },
-};
 
 const TaskTableRow = ({
     task,
@@ -93,6 +53,13 @@ const TaskTableRow = ({
         setTimeout(() => setLoadingPriority(false), 2000);
     };
 
+    const status =
+        TASK_STATUSES[task.status as TaskStatus] || TASK_STATUSES.todo;
+    const priority =
+        TASK_PRIORITIES[task.priority as TaskPriority] ||
+        TASK_PRIORITIES.medium;
+    const PriorityIcon = priority.icon;
+
     return (
         <TableRow>
             <TableCell className="p-4 font-medium">
@@ -114,27 +81,21 @@ const TaskTableRow = ({
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Badge
-                            variant={
-                                statusConfig[
-                                    task.status as keyof typeof statusConfig
-                                ]?.variant || 'secondary'
-                            }
+                            variant={status.variant}
                             className="flex w-fit cursor-pointer items-center gap-1.5"
                         >
                             {loadingStatus && <Spinner className="h-3 w-3" />}
                             <div
-                                className={`h-2 w-2 rounded-full ${statusConfig[task.status as keyof typeof statusConfig]?.color}`}
+                                className={`h-2 w-2 rounded-full ${status.color}`}
                             />
-                            {statusConfig[
-                                task.status as keyof typeof statusConfig
-                            ]?.label || task.status}
+                            {status.label}
                         </Badge>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
-                        {Object.entries(statusConfig).map(([key, config]) => (
+                        {Object.values(TASK_STATUSES).map((config) => (
                             <DropdownMenuItem
-                                key={key}
-                                onClick={() => handleStatusChange(key)}
+                                key={config.value}
+                                onClick={() => handleStatusChange(config.value)}
                                 disabled={loadingStatus}
                             >
                                 <div
@@ -150,54 +111,31 @@ const TaskTableRow = ({
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Badge
-                            variant={
-                                priorityConfig[
-                                    task.priority as keyof typeof priorityConfig
-                                ]?.variant || 'secondary'
-                            }
+                            variant={priority.variant}
                             className="flex w-fit cursor-pointer items-center gap-1.5"
                         >
                             {loadingPriority && <Spinner className="h-3 w-3" />}
                             <span>
-                                {(() => {
-                                    const PriorityIcon =
-                                        priorityConfig[
-                                            task.priority as keyof typeof priorityConfig
-                                        ]?.icon;
-
-                                    return PriorityIcon ? (
-                                        <PriorityIcon
-                                            className={`h-3 w-3 ${priorityConfig[task.priority as keyof typeof priorityConfig].iconColor}`}
-                                        />
-                                    ) : null;
-                                })()}
+                                <PriorityIcon
+                                    className={`h-3 w-3 ${priority.iconColor}`}
+                                />
                             </span>
-
-                            {priorityConfig[
-                                task.priority as keyof typeof priorityConfig
-                            ]?.label || task.priority}
+                            {priority.label}
                         </Badge>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
-                        {Object.entries(priorityConfig).map(([key, config]) => (
+                        {Object.values(TASK_PRIORITIES).map((config) => (
                             <DropdownMenuItem
-                                key={key}
-                                onClick={() => handlePriorityChange(key)}
+                                key={config.value}
+                                onClick={() =>
+                                    handlePriorityChange(config.value)
+                                }
                                 disabled={loadingPriority}
                             >
                                 <span className="mr-2">
-                                    {(() => {
-                                        const PriorityIcon =
-                                            priorityConfig[
-                                                task.priority as keyof typeof priorityConfig
-                                            ]?.icon;
-
-                                        return PriorityIcon ? (
-                                            <PriorityIcon
-                                                className={`h-3 w-3 ${priorityConfig[key].iconColor}`}
-                                            />
-                                        ) : null;
-                                    })()}
+                                    <config.icon
+                                        className={`h-3 w-3 ${config.iconColor}`}
+                                    />
                                 </span>
                                 {config.label}
                             </DropdownMenuItem>

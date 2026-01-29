@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { TASK_PRIORITIES, TASK_STATUSES } from '@/constants/task';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import taskRoute from '@/routes/task';
@@ -198,30 +199,21 @@ const CreateTask = ({ team = null, projects = [] }: CreateTaskProps) => {
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="todo">
-                                                    <span className="flex items-center gap-2">
-                                                        <span className="h-2 w-2 rounded-full bg-gray-400"></span>
-                                                        To Do
-                                                    </span>
-                                                </SelectItem>
-                                                <SelectItem value="in_progress">
-                                                    <span className="flex items-center gap-2">
-                                                        <span className="h-2 w-2 rounded-full bg-blue-500"></span>
-                                                        In Progress
-                                                    </span>
-                                                </SelectItem>
-                                                <SelectItem value="blocked">
-                                                    <span className="flex items-center gap-2">
-                                                        <span className="h-2 w-2 rounded-full bg-red-500"></span>
-                                                        Blocked
-                                                    </span>
-                                                </SelectItem>
-                                                <SelectItem value="done">
-                                                    <span className="flex items-center gap-2">
-                                                        <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                                                        Done
-                                                    </span>
-                                                </SelectItem>
+                                                {Object.values(
+                                                    TASK_STATUSES,
+                                                ).map((config) => (
+                                                    <SelectItem
+                                                        key={config.value}
+                                                        value={config.value}
+                                                    >
+                                                        <span className="flex items-center gap-2">
+                                                            <span
+                                                                className={`h-2 w-2 rounded-full ${config.color}`}
+                                                            ></span>
+                                                            {config.label}
+                                                        </span>
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                         <p className="text-sm text-muted-foreground">
@@ -247,30 +239,21 @@ const CreateTask = ({ team = null, projects = [] }: CreateTaskProps) => {
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="low">
-                                                    <span className="flex items-center gap-2">
-                                                        <FlagIcon className="h-3 w-3 text-gray-400" />
-                                                        Low
-                                                    </span>
-                                                </SelectItem>
-                                                <SelectItem value="medium">
-                                                    <span className="flex items-center gap-2">
-                                                        <FlagIcon className="h-3 w-3 text-blue-500" />
-                                                        Medium
-                                                    </span>
-                                                </SelectItem>
-                                                <SelectItem value="high">
-                                                    <span className="flex items-center gap-2">
-                                                        <FlagIcon className="h-3 w-3 text-orange-500" />
-                                                        High
-                                                    </span>
-                                                </SelectItem>
-                                                <SelectItem value="critical">
-                                                    <span className="flex items-center gap-2">
-                                                        <FlagIcon className="h-3 w-3 text-red-500" />
-                                                        Critical
-                                                    </span>
-                                                </SelectItem>
+                                                {Object.values(
+                                                    TASK_PRIORITIES,
+                                                ).map((config) => (
+                                                    <SelectItem
+                                                        key={config.value}
+                                                        value={config.value}
+                                                    >
+                                                        <span className="flex items-center gap-2">
+                                                            <config.icon
+                                                                className={`h-3 w-3 ${config.iconColor}`}
+                                                            />
+                                                            {config.label}
+                                                        </span>
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                         <p className="text-sm text-muted-foreground">

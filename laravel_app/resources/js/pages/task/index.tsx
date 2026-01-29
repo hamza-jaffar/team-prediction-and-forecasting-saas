@@ -58,8 +58,16 @@ const TaskIndex = ({
     const [trashModalOpen, setTrashModalOpen] = useState(false);
     const [status, setStatus] = useState(queryParams?.status || 'all');
     const [priority, setPriority] = useState(queryParams?.priority || 'all');
-    const [startDate, setStartDate] = useState(queryParams?.start_date || '');
-    const [dueDate, setDueDate] = useState(queryParams?.due_date || '');
+    const [startDateFrom, setStartDateFrom] = useState(
+        queryParams?.start_date_from || '',
+    );
+    const [startDateTo, setStartDateTo] = useState(
+        queryParams?.start_date_to || '',
+    );
+    const [dueDateFrom, setDueDateFrom] = useState(
+        queryParams?.due_date_from || '',
+    );
+    const [dueDateTo, setDueDateTo] = useState(queryParams?.due_date_to || '');
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const [isFiltering, setIsFiltering] = useState(false);
     const { delete: deleteTask, processing: isDeleting } = useForm();
@@ -98,8 +106,10 @@ const TaskIndex = ({
     useEffect(() => {
         setStatus(queryParams?.status || 'all');
         setPriority(queryParams?.priority || 'all');
-        setStartDate(queryParams?.start_date || '');
-        setDueDate(queryParams?.due_date || '');
+        setStartDateFrom(queryParams?.start_date_from || '');
+        setStartDateTo(queryParams?.start_date_to || '');
+        setDueDateFrom(queryParams?.due_date_from || '');
+        setDueDateTo(queryParams?.due_date_to || '');
     }, [queryParams]);
 
     const handleFilterChange = useCallback(
@@ -268,8 +278,10 @@ const TaskIndex = ({
                     search={search}
                     status={status}
                     priority={priority}
-                    startDate={startDate}
-                    dueDate={dueDate}
+                    startDateFrom={startDateFrom}
+                    startDateTo={startDateTo}
+                    dueDateFrom={dueDateFrom}
+                    dueDateTo={dueDateTo}
                     onSearchChange={handleSearch}
                     onFilterChange={handleFilterChange}
                     isLoading={isFiltering}

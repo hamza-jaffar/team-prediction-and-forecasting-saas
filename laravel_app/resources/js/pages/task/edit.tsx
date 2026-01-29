@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { TASK_PRIORITIES, TASK_STATUSES } from '@/constants/task';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import taskRoute from '@/routes/task';
@@ -27,14 +28,7 @@ import { Project } from '@/types/project';
 import { Task } from '@/types/task';
 import { Form } from '@inertiajs/react';
 import { format } from 'date-fns';
-import {
-    CalendarIcon,
-    CheckCircleIcon,
-    CircleIcon,
-    ClockIcon,
-    FlagIcon,
-    XCircleIcon,
-} from 'lucide-react';
+import { CalendarIcon, CheckCircleIcon, ClockIcon } from 'lucide-react';
 import { useState } from 'react';
 
 interface TaskEditProps {
@@ -200,30 +194,21 @@ const TaskEdit = ({ task, projects, team = null }: TaskEditProps) => {
                                                 <SelectValue placeholder="Select status" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="todo">
-                                                    <div className="flex items-center gap-2">
-                                                        <CircleIcon className="h-4 w-4 text-gray-500" />
-                                                        To Do
-                                                    </div>
-                                                </SelectItem>
-                                                <SelectItem value="in_progress">
-                                                    <div className="flex items-center gap-2">
-                                                        <CircleIcon className="h-4 w-4 text-blue-500" />
-                                                        In Progress
-                                                    </div>
-                                                </SelectItem>
-                                                <SelectItem value="blocked">
-                                                    <div className="flex items-center gap-2">
-                                                        <XCircleIcon className="h-4 w-4 text-red-500" />
-                                                        Blocked
-                                                    </div>
-                                                </SelectItem>
-                                                <SelectItem value="done">
-                                                    <div className="flex items-center gap-2">
-                                                        <CheckCircleIcon className="h-4 w-4 text-green-500" />
-                                                        Done
-                                                    </div>
-                                                </SelectItem>
+                                                {Object.values(
+                                                    TASK_STATUSES,
+                                                ).map((config) => (
+                                                    <SelectItem
+                                                        key={config.value}
+                                                        value={config.value}
+                                                    >
+                                                        <div className="flex items-center gap-2">
+                                                            <div
+                                                                className={`h-2 w-2 rounded-full ${config.color}`}
+                                                            />
+                                                            {config.label}
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                         <InputError message={errors.status} />
@@ -242,30 +227,21 @@ const TaskEdit = ({ task, projects, team = null }: TaskEditProps) => {
                                                 <SelectValue placeholder="Select priority" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="low">
-                                                    <div className="flex items-center gap-2">
-                                                        <FlagIcon className="h-4 w-4 text-gray-500" />
-                                                        Low
-                                                    </div>
-                                                </SelectItem>
-                                                <SelectItem value="medium">
-                                                    <div className="flex items-center gap-2">
-                                                        <FlagIcon className="h-4 w-4 text-blue-500" />
-                                                        Medium
-                                                    </div>
-                                                </SelectItem>
-                                                <SelectItem value="high">
-                                                    <div className="flex items-center gap-2">
-                                                        <FlagIcon className="h-4 w-4 text-orange-500" />
-                                                        High
-                                                    </div>
-                                                </SelectItem>
-                                                <SelectItem value="critical">
-                                                    <div className="flex items-center gap-2">
-                                                        <FlagIcon className="h-4 w-4 text-red-500" />
-                                                        Critical
-                                                    </div>
-                                                </SelectItem>
+                                                {Object.values(
+                                                    TASK_PRIORITIES,
+                                                ).map((config) => (
+                                                    <SelectItem
+                                                        key={config.value}
+                                                        value={config.value}
+                                                    >
+                                                        <div className="flex items-center gap-2">
+                                                            <config.icon
+                                                                className={`h-4 w-4 ${config.iconColor}`}
+                                                            />
+                                                            {config.label}
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                         <InputError message={errors.priority} />
