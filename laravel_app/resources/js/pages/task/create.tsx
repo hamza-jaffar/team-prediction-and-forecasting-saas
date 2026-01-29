@@ -60,7 +60,6 @@ const CreateTask = ({ team = null, projects = [] }: CreateTaskProps) => {
                 : taskRoute.create().url,
         },
     ];
-
     const [startDate, setStartDate] = useState<Date>();
     const [dueDate, setDueDate] = useState<Date>();
 
@@ -155,6 +154,9 @@ const CreateTask = ({ team = null, projects = [] }: CreateTaskProps) => {
                                                         value={project.id.toString()}
                                                     >
                                                         {project.name}
+                                                        <span className="text-xs text-muted-foreground">
+                                                            {project.slug}
+                                                        </span>
                                                     </SelectItem>
                                                 ))
                                             ) : (
@@ -427,7 +429,7 @@ const CreateTask = ({ team = null, projects = [] }: CreateTaskProps) => {
                                     <Button
                                         type="submit"
                                         disabled={processing}
-                                        className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary/80 to-primary py-6 text-lg font-semibold text-white shadow-lg transition-all hover:from-primary hover:to-primary/90 hover:shadow-xl disabled:opacity-50"
+                                        className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-linear-to-r from-primary/80 to-primary py-6 text-lg font-semibold text-white shadow-lg transition-all hover:from-primary hover:to-primary/90 hover:shadow-xl disabled:opacity-50"
                                     >
                                         {processing && <Spinner />}
                                         {processing

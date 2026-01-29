@@ -41,4 +41,9 @@ class Team extends Model
     {
         return 'slug';
     }
+
+    public function projects()
+    {
+        return $this->hasMany(ProjectTeams::class, 'team_id', 'id')->with('project');
+    }
 }

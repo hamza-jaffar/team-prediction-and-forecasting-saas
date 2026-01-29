@@ -11,7 +11,7 @@ export interface Task {
     created_by: number;
     title: string;
     description: string | null;
-    slug: string | null;
+    slug: string;
     status: TaskStatus;
     priority: TaskPriority;
     start_date: string | null;
@@ -27,4 +27,5 @@ export interface Task {
     project?: Project;
     team?: Team;
     creator?: User;
+    assignedUsers?: User[];
 }

@@ -29,9 +29,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/', [\App\Http\Controllers\Task\TaskCURDController::class, 'index'])->name('index');
             Route::get('/create', [\App\Http\Controllers\Task\TaskCURDController::class, 'create'])->name('create');
             Route::post('/store', [\App\Http\Controllers\Task\TaskCURDController::class, 'store'])->name('store');
+            Route::get('/{slug}', [\App\Http\Controllers\Task\TaskCURDController::class, 'show'])->name('show');
             Route::get('/edit/{slug}', [\App\Http\Controllers\Task\TaskCURDController::class, 'edit'])->name('edit');
             Route::put('/update/{slug}', [\App\Http\Controllers\Task\TaskCURDController::class, 'update'])->name('update');
             Route::delete('/destroy/{slug}', [\App\Http\Controllers\Task\TaskCURDController::class, 'destroy'])->name('destroy');
+            Route::post('/restore/{slug}', [\App\Http\Controllers\Task\TaskCURDController::class, 'restore'])->name('restore');
+            Route::delete('/force-delete/{slug}', [\App\Http\Controllers\Task\TaskCURDController::class, 'forceDelete'])->name('forceDelete');
         });
     });
     Route::resource('team', TeamCRUDController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);

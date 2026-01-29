@@ -3,86 +3,255 @@
 namespace App\Http\Controllers\Task;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Task\CreateTaskRequest;
+use App\Http\Requests\Task\UpdateTaskRequest;
+use App\Service\ProjectService;
+use App\Service\TaskService;
 use Inertia\Inertia;
 
 class TaskCURDController extends Controller
 {
-    public function index(\Illuminate\Http\Request $request, \App\Models\Team $team = null)
+    /**
+     * Display a listing of tasks
+     */
+    public function index(\Illuminate\Http\Request $request, ?\App\Models\Team $team = null)
     {
-        return Inertia::render('task/index', [
-            'team' => $team,
-        ]);
-    }
+        try {
+            $tasks = TaskService::getTasks($request, $team);
 
-    public function create(\Illuminate\Http\Request $request, \App\Models\Team $team = null)
-    {
-        return Inertia::render('task/create', [
-            'team' => $team,
-        ]);
-    }
+            if ($request->wantsJson() && !$request->header('X-Inertia')) {
+                return response()->json($tasks);
+            }
 
-    public function store(\Illuminate\Http\Request $request, \App\Models\Team $team = null)
-    {
-        // Implementation logic for storing task
-        
-        if ($team) {
-            return redirect()->route('team.task.index', $team->slug)->with('success', 'Task created successfully.');
+            return Inertia::render('task/index', [
+                'team' => $team,
+                'tasks' => $tasks,
+                'queryParams' => $request->query() ?: null,
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
-
-        return redirect()->route('task.index')->with('success', 'Task created successfully.');
     }
 
+    /**
+     * Show the form for creating a new task
+     */
+    public function create(\Illuminate\Http\Request $request, ?\App\Models\Team $team = null)
+    {
+        try {
+            if ($team === null) {
+                return redirect()->back()->with('error', 'Team not found.');
+            }
+
+            $projects = ProjectService::getCurrentTeamProject($team);
+
+            return Inertia::render('task/create', [
+                'team' => $team,
+                'projects' => $projects,
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Store a newly created task in storage
+     */
+    public function store(CreateTaskRequest $request, ?\App\Models\Team $team = null)
+    {
+        try {
+            $data = $request->validated();
+            
+            // Add team_id if team context exists
+            if ($team) {
+                $data['team_id'] = $team->id;
+            }
+
+            $task = TaskService::create($data);
+
+            if ($team) {
+                return redirect()->route('team.task.index', $team->slug)
+                    ->with('success', 'Task created successfully.');
+            }
+
+            return redirect()->route('task.index')
+                ->with('success', 'Task created successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Display the specified task
+     */
+    public function show($team, $slug = null)
+    {
+        try {
+            // Handle both team and non-team routes
+            if ($slug === null) {
+                $actualSlug = $team;
+                $actualTeam = null;
+            } else {
+                $actualSlug = $slug;
+                $actualTeam = $team instanceof \App\Models\Team ? $team : \App\Models\Team::where('slug', $team)->first();
+            }
+
+            $task = TaskService::getTaskBySlug($actualSlug);
+
+            return Inertia::render('task/show', [
+                'team' => $actualTeam,
+                'task' => $task,
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Show the form for editing the specified task
+     */
     public function edit($team, $slug = null)
     {
-        if ($slug === null) {
-            $actualSlug = $team;
-            $actualTeam = null;
-        } else {
-            $actualSlug = $slug;
-            $actualTeam = $team instanceof \App\Models\Team ? $team : \App\Models\Team::where('slug', $team)->first();
-        }
+        try {
+            if ($slug === null) {
+                $actualSlug = $team;
+                $actualTeam = null;
+            } else {
+                $actualSlug = $slug;
+                $actualTeam = $team instanceof \App\Models\Team ? $team : \App\Models\Team::where('slug', $team)->first();
+            }
 
-        return Inertia::render('task/edit', [
-            'team' => $actualTeam,
-            'task' => null, // Placeholder for task data
-        ]);
+            $task = TaskService::getTaskBySlug($actualSlug);
+            
+            // Get projects for the dropdown
+            $projects = $actualTeam 
+                ? ProjectService::getCurrentTeamProject($actualTeam)
+                : [];
+
+            return Inertia::render('task/edit', [
+                'team' => $actualTeam,
+                'task' => $task,
+                'projects' => $projects,
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
-    public function update(\Illuminate\Http\Request $request, $team, $slug = null)
+    /**
+     * Update the specified task in storage
+     */
+    public function update(UpdateTaskRequest $request, $team, $slug = null)
     {
-        if ($slug === null) {
-            $actualSlug = $team;
-            $actualTeam = null;
-        } else {
-            $actualSlug = $slug;
-            $actualTeam = $team instanceof \App\Models\Team ? $team : \App\Models\Team::where('slug', $team)->first();
+        try {
+            if ($slug === null) {
+                $actualSlug = $team;
+                $actualTeam = null;
+            } else {
+                $actualSlug = $slug;
+                $actualTeam = $team instanceof \App\Models\Team ? $team : \App\Models\Team::where('slug', $team)->first();
+            }
+
+            $data = $request->validated();
+            $task = TaskService::update($actualSlug, $data);
+
+            if ($actualTeam) {
+                return redirect()->route('team.task.index', $actualTeam->slug)
+                    ->with('success', 'Task updated successfully.');
+            }
+
+            return redirect()->route('task.index')
+                ->with('success', 'Task updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
         }
-
-        // Implementation logic for updating task
-
-        if ($actualTeam) {
-            return redirect()->route('team.task.index', $actualTeam->slug)->with('success', 'Task updated successfully.');
-        }
-
-        return redirect()->route('task.index')->with('success', 'Task updated successfully.');
     }
 
+    /**
+     * Soft delete the specified task
+     */
     public function destroy($team, $slug = null)
     {
-        if ($slug === null) {
-            $actualSlug = $team;
-            $actualTeam = null;
-        } else {
-            $actualSlug = $slug;
-            $actualTeam = $team instanceof \App\Models\Team ? $team : \App\Models\Team::where('slug', $team)->first();
+        try {
+            if ($slug === null) {
+                $actualSlug = $team;
+                $actualTeam = null;
+            } else {
+                $actualSlug = $slug;
+                $actualTeam = $team instanceof \App\Models\Team ? $team : \App\Models\Team::where('slug', $team)->first();
+            }
+
+            TaskService::delete($actualSlug);
+
+            if ($actualTeam) {
+                return redirect()->route('team.task.index', $actualTeam->slug)
+                    ->with('success', 'Task moved to trash successfully.');
+            }
+
+            return redirect()->route('task.index')
+                ->with('success', 'Task moved to trash successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
+    }
 
-        // Implementation logic for deleting task
+    /**
+     * Restore a soft-deleted task
+     */
+    public function restore($team, $slug = null)
+    {
+        try {
+            if ($slug === null) {
+                $actualSlug = $team;
+                $actualTeam = null;
+            } else {
+                $actualSlug = $slug;
+                $actualTeam = $team instanceof \App\Models\Team ? $team : \App\Models\Team::where('slug', $team)->first();
+            }
 
-        if ($actualTeam) {
-            return redirect()->route('team.task.index', $actualTeam->slug)->with('success', 'Task deleted successfully.');
+            TaskService::restore($actualSlug);
+
+            if ($actualTeam) {
+                return redirect()->route('team.task.index', $actualTeam->slug)
+                    ->with('success', 'Task restored successfully.');
+            }
+
+            return redirect()->route('task.index')
+                ->with('success', 'Task restored successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
+    }
 
-        return redirect()->route('task.index')->with('success', 'Task deleted successfully.');
+    /**
+     * Permanently delete the specified task
+     */
+    public function forceDelete($team, $slug = null)
+    {
+        try {
+            if ($slug === null) {
+                $actualSlug = $team;
+                $actualTeam = null;
+            } else {
+                $actualSlug = $slug;
+                $actualTeam = $team instanceof \App\Models\Team ? $team : \App\Models\Team::where('slug', $team)->first();
+            }
+
+            TaskService::forceDelete($actualSlug);
+
+            if ($actualTeam) {
+                return redirect()->route('team.task.index', $actualTeam->slug)
+                    ->with('success', 'Task permanently deleted.');
+            }
+
+            return redirect()->route('task.index')
+                ->with('success', 'Task permanently deleted.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 }

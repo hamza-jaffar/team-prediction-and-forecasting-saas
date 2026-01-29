@@ -85,4 +85,14 @@ class Task extends Model
     {
         return $this->hasOne(TaskPrediction::class);
     }
+
+    /**
+     * Get the route key name for Laravel route model binding
+     *
+     * @return string
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 }

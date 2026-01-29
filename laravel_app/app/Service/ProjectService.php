@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ProjectService
 {
+    use TrashableService;
     public static function create(array $data)
     {
         try {
@@ -68,6 +69,15 @@ class ProjectService
             }
 
             return $query->paginate($request->per_page ?? 10);
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    public static function getCurrentTeamProject(\App\Models\Team $team)
+    {
+        try {
+            return $team->projects->pluck('project')->values();
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
@@ -138,26 +148,12 @@ class ProjectService
 
     public static function restore($slug)
     {
-        try {
-            $project = Project::withTrashed()->where('slug', $slug)->firstOrFail();
-            $project->restore();
-
-            return $project;
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
-        }
+        return self::restoreModel(Project::class, $slug);
     }
 
     public static function forceDelete($slug)
     {
-        try {
-            $project = Project::withTrashed()->where('slug', $slug)->firstOrFail();
-            $project->forceDelete();
-
-            return true;
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
-        }
+        return self::forceDeleteModel(Project::class, $slug);
     }
 
     public static function updateStatus($slug, $status)
