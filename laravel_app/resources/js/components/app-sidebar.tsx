@@ -104,7 +104,39 @@ export function AppSidebar() {
             title: 'Tasks',
             href: activeTeam ? team.task.index(activeTeam.slug).url : '#',
             icon: ClipboardCheck,
-            show: true,
+            show: activeTeam
+                ? activeTeam?.user_id === auth.user.id
+                    ? false
+                    : true
+                : false,
+        },
+        {
+            title: 'Tasks',
+            href: '#',
+            icon: ClipboardCheck,
+            show: activeTeam
+                ? activeTeam?.user_id === auth.user.id
+                    ? true
+                    : false
+                : false,
+            items: [
+                {
+                    title: 'View All',
+                    href: activeTeam
+                        ? team.task.index(activeTeam.slug).url
+                        : '#',
+                    show: true,
+                    icon: TableOfContents,
+                },
+                {
+                    title: 'Create New',
+                    href: activeTeam
+                        ? team.task.create(activeTeam.slug).url
+                        : '#',
+                    show: true,
+                    icon: PlusCircle,
+                },
+            ],
         },
         {
             title: 'Team Settings',
@@ -135,6 +167,7 @@ export function AppSidebar() {
             title: 'Settings',
             href: editAppearance().url,
             icon: Settings,
+            show: activeTeam ? false : true,
         },
     ];
 
