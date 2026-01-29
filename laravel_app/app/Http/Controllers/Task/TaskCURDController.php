@@ -19,7 +19,7 @@ class TaskCURDController extends Controller
         try {
             $tasks = TaskService::getTasks($request, $team);
 
-            if ($request->wantsJson() && !$request->header('X-Inertia')) {
+            if ($request->wantsJson() && ! $request->header('X-Inertia')) {
                 return response()->json($tasks);
             }
 
@@ -39,11 +39,14 @@ class TaskCURDController extends Controller
     public function create(\Illuminate\Http\Request $request, ?\App\Models\Team $team = null)
     {
         try {
-            if ($team === null) {
-                return redirect()->back()->with('error', 'Team not found.');
+            $projects = [];
+            if ($team !== null) {
+                $projects = ProjectService::getCurrentTeamProject($team);
             }
 
-            $projects = ProjectService::getCurrentTeamProject($team);
+            if ($team === null) {
+                $projects = ProjectService::getMyProjects();
+            }
 
             return Inertia::render('task/create', [
                 'team' => $team,
@@ -61,7 +64,7 @@ class TaskCURDController extends Controller
     {
         try {
             $data = $request->validated();
-            
+
             // Add team_id if team context exists
             if ($team) {
                 $data['team_id'] = $team->id;
@@ -124,11 +127,11 @@ class TaskCURDController extends Controller
             }
 
             $task = TaskService::getTaskBySlug($actualSlug);
-            
+
             // Get projects for the dropdown
-            $projects = $actualTeam 
+            $projects = $actualTeam
                 ? ProjectService::getCurrentTeamProject($actualTeam)
-                : [];
+                : ProjectService::getMyProjects();
 
             return Inertia::render('task/edit', [
                 'team' => $actualTeam,

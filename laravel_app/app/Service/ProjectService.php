@@ -11,13 +11,25 @@ use Illuminate\Support\Facades\Auth;
 class ProjectService
 {
     use TrashableService;
-    public static function create(array $data)
+
+    public static function create(array $data, ?int $teamId = null)
     {
         try {
             $data['created_by'] = Auth::id();
             $data['slug'] = SlugHelper::create($data['name'], 'projects');
 
-            return Project::create($data);
+            $project = Project::create($data);
+
+            if ($teamId) {
+                ProjectTeams::create([
+                    'project_id' => $project->id,
+                    'team_id' => $teamId,
+                    'role' => 'owner', // Or a default role
+                    'status' => 'active',
+                ]);
+            }
+
+            return $project;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
@@ -78,6 +90,15 @@ class ProjectService
     {
         try {
             return $team->projects->pluck('project')->values();
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    public static function getMyProjects()
+    {
+        try {
+            return Project::where('created_by', Auth::id())->get();
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }

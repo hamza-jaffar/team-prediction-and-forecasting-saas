@@ -35,7 +35,7 @@ class ProjectCURDController extends Controller
     public function store(CreateEditProjectRequest $request, \App\Models\Team $team = null)
     {
         try {
-            ProjectService::create($request->validated());
+            ProjectService::create($request->validated(), $team ? $team->id : null);
 
             if ($team) {
                 return redirect()->route('team.project.index', $team->slug)->with('success', 'Project created successfully.');

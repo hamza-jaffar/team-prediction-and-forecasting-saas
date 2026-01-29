@@ -76,8 +76,6 @@ const TaskEdit = ({ task, projects, team = null }: TaskEditProps) => {
         task.due_date ? new Date(task.due_date) : undefined,
     );
 
-    console.log(task);
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <section className="py-10">
@@ -174,7 +172,10 @@ const TaskEdit = ({ task, projects, team = null }: TaskEditProps) => {
                                                     </SelectItem>
                                                 ))
                                             ) : (
-                                                <SelectItem value="" disabled>
+                                                <SelectItem
+                                                    value="no_project_available"
+                                                    disabled
+                                                >
                                                     No projects available
                                                 </SelectItem>
                                             )}
