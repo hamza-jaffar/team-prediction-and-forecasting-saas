@@ -10,6 +10,7 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import { PlusIcon, Trash2Icon } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import DeleteTaskDialog from './delete-task-dialog';
+import GanttView from './gantt-view';
 import TaskFilters from './task-filters';
 import TaskPagination from './task-pagination';
 import TaskTable from './task-table';
@@ -68,6 +69,7 @@ const TaskIndex = ({
         queryParams?.due_date_from || '',
     );
     const [dueDateTo, setDueDateTo] = useState(queryParams?.due_date_to || '');
+    const [view, setView] = useState<'table' | 'gantt'>('table');
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const [isFiltering, setIsFiltering] = useState(false);
     const { delete: deleteTask, processing: isDeleting } = useForm();
@@ -285,20 +287,29 @@ const TaskIndex = ({
                     onSearchChange={handleSearch}
                     onFilterChange={handleFilterChange}
                     isLoading={isFiltering}
+                    view={view}
+                    onViewChange={setView}
                 />
 
-                {/* Task Table */}
-                <TaskTable
-                    tasks={tasks.data}
-                    sortField={sortField}
-                    sortDirection={sortDirection}
-                    onSort={handleSort}
-                    onStatusChange={handleStatusChange}
-                    onPriorityChange={handlePriorityChange}
-                    onDeleteClick={handleDeleteClick}
-                    isLoading={isFiltering}
-                    team={team}
-                />
+                {/* Table View */}
+                {view === 'table' && (
+                    <TaskTable
+                        tasks={tasks.data}
+                        sortField={sortField}
+                        sortDirection={sortDirection}
+                        onSort={handleSort}
+                        onStatusChange={handleStatusChange}
+                        onPriorityChange={handlePriorityChange}
+                        onDeleteClick={handleDeleteClick}
+                        isLoading={isFiltering}
+                        team={team}
+                    />
+                )}
+
+                {/* Gantt View */}
+                {view === 'gantt' && (
+                    <GanttView tasks={tasks.data} isLoading={isFiltering} />
+                )}
 
                 {/* Pagination */}
                 <TaskPagination
