@@ -196,7 +196,7 @@ const TaskIndex = ({
                   teamRoutes.task.update(team.slug, slug).url
                 : taskRoute.update(slug).url;
 
-            router.patch(
+            router.put(
                 url,
                 {
                     priority: newPriority,

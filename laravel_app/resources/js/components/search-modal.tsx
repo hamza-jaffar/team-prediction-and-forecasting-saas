@@ -32,7 +32,7 @@ export function SearchModal({
                     showCloseButton={false}
                     className="my-2! max-h-screen overflow-y-auto p-0! sm:max-w-[500px]"
                 >
-                    <Command className="">
+                    <Command className="p-3">
                         <CommandInput placeholder="Type a command or search..." />
                         <CommandList>
                             <CommandEmpty>No results found.</CommandEmpty>
@@ -51,7 +51,7 @@ export function SearchModal({
                                 </CommandItem>
                             </CommandGroup>
                             <CommandSeparator />
-                            <CommandGroup heading="Settings">
+                            <CommandGroup heading="Pages">
                                 <CommandItem>
                                     <User />
                                     <span>Profile</span>

@@ -68,6 +68,7 @@ export function AppSidebar() {
                     title: 'View All',
                     href: task.index().url,
                     show: true,
+                    icon: TableOfContents,
                 },
             ],
         },
